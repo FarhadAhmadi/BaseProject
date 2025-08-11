@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BaseProject.Tests.Application.Tests
 {
-    internal class OrderServiceTests
+    public class OrderServiceTests
     {
     }
 }

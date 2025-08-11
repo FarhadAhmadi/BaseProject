@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BaseProject.Tests.Infrastructure.Tests
 {
-    internal class ProductRepositoryTests
+    public class ProductRepositoryTests
     {
     }
 }

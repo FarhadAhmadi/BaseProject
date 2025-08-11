@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BaseProject.Tests.API.Tests
 {
-    internal class HealthCheckControllerTests
+    public class HealthCheckControllerTests
     {
     }
 }

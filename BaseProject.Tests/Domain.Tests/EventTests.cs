@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BaseProject.Tests.Domain.Tests
 {
-    internal class EventTests
+    public class EventTests
     {
     }
 }
