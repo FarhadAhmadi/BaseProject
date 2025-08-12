@@ -1,41 +1,61 @@
+using BaseProject.API.Extensions;
+using BaseProject.API.Middlewares;
+using BaseProject.Domain.Configurations;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var configuration = builder.Configuration.Get<AppSettings>()
+    ?? throw new Exception("AppSetting Not Exist");
+
+// -------------------- Configure Logging --------------------
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// -------------------- Configure Services --------------------
+
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(BaseProject.API.Controllers.BaseController).Assembly);
+
+
+// Extension classes
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// -------------------- Configure Middleware Pipeline --------------------
+app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Redirect HTTP requests to HTTPS
+app.UseHttpsRedirection();
+// Set up CORS
+app.UseCors("DefaultCorsPolicy");
+// Swagger UI setup for API documentation
+app.UseSwagger(configuration);
+// Health check configuration
+app.ConfigureHealthCheck();
+// Set Rate Limmiter
+app.UseRateLimiter();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Authentication and Authorization middlewares
+app.UseAuthentication();
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// -------------------- Endpoints --------------------
+app.MapControllers();
+app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+// -------------------- Run Application --------------------
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

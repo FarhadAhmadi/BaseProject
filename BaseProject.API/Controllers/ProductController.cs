@@ -2,9 +2,7 @@
 
 namespace BaseProject.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
     }
 }
