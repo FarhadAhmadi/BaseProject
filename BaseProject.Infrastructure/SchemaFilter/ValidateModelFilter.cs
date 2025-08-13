@@ -1,5 +1,6 @@
 ﻿using BaseProject.Application.DTOs.Common;
 using BaseProject.Domain.Constants;
+using BaseProject.Shared.DTOs.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

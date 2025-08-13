@@ -17,11 +17,11 @@ namespace BaseProject.Infrastructure.Persistence
                 IdentityRoleClaim<string>, IdentityUserToken<string>>(options)
     {
         //public DbSet<Book> Books { get; set; }
-        //public DbSet<User> Users { get; set; }
-        //public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-        //public DbSet<RefreshToken> RefreshTokens { get; set; }
-        //public DbSet<ForgotPassword> ForgotPassword { get; set; }
-        //public DbSet<Media> Media { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<ForgotPassword> ForgotPassword { get; set; }
+        public DbSet<Media> Media { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

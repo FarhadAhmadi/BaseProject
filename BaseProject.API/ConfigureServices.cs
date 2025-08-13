@@ -1,4 +1,3 @@
-
 using BaseProject.API.Extensions;
 using BaseProject.Domain.Authorization;
 using BaseProject.Domain.Configurations;
@@ -9,7 +8,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BaseProject.API;
 

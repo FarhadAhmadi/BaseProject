@@ -1,4 +1,7 @@
+using BaseProject.Application.Common.Interfaces;
+using BaseProject.Application.Services;
 using BaseProject.Domain.Configurations;
+using BaseProject.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,37 +9,35 @@ namespace BaseProject.Application;
 
 public static class ConfigureServices
 {
-    //public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, AppSettings configuration)
-    //{
-    //    if (configuration.UseInMemoryDatabase)
-    //    {
-    //        services.AddDbContext<ApplicationDbContext>(options =>
-    //            options.UseInMemoryDatabase("CleanArchitecture"));
-    //    }
-    //    else
-    //    {
-    //        services.AddDbContext<ApplicationDbContext>(options =>
-    //            options.UseSqlServer(configuration.ConnectionStrings.DefaultConnection,
-    //            sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 5,
-    //                                                          maxRetryDelay: TimeSpan.FromSeconds(10),
-    //                                                          errorNumbersToAdd: null)));
-    //    }
+    public static IServiceCollection AddApplicationService(this IServiceCollection services, AppSettings appsettings)
+    {
+        services.AddTransient<IUserContext, UserContext>();
+        //services.AddTransient<IAuthService, AuthService>();
+        //services.AddTransient<IBookService, BookService>();
+        //services.AddTransient<IAuthorService, AuthorService>();
+        //services.AddTransient<IPublisherService, PublisherService>();
+        //services.AddTransient<ICategoryService, CategoryService>();
+        services.AddTransient<IMailService, MailService>();
+        //services.AddTransient<IMediaService, MediaService>();
+        //services.AddTransient<IRoleService, RoleService>();
+        services.AddTransient<IAuthIdentityService, AuthIdentityService>();
 
-    //    //services.AddIdentity<ApplicationUser, RoleIdentity>()
-    //    //        .AddEntityFrameworkStores<ApplicationDbContext>()
-    //    //        .AddDefaultTokenProviders();
+        if (appsettings.FileStorageSettings.LocalStorage)
+        {
+            services.AddSingleton<IFileService, LocalStorageService>();
+        }
+        else
+        {
+            services.AddSingleton<IFileService, CloudinaryStorageService>();
+        }
 
-    //    // register services
-    //    //services.AddScoped<IUserRepository, UserRepository>();
-    //    //services.AddScoped<IBookRepository, BookRepository>();
-    //    //services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-    //    //services.AddScoped<IMediaRepository, MediaRepository>();
-    //    //services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
-    //    //services.AddScoped<IUnitOfWork, UnitOfWork>();
-    //    //services.AddTransient<ApplicationDbContextInitializer>();
 
-    //    //services.AddScoped<DapperContext>();
+        services.AddTransient<IUserService, UserService>();
 
-    //    return services;
-    //}
+        services.AddTransient<ICurrentTime, CurrentTime>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
+
+        return services;
+    }
 }

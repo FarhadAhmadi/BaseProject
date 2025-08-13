@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters;
+﻿
+using BaseProject.Domain.Enums;
 
 namespace BaseProject.Domain.Entities
 {
