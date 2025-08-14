@@ -1,6 +1,6 @@
 using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Interfaces;
-using BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -18,7 +18,7 @@ namespace BaseProject.Application.Services
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-        public async Task<List<UserDto>> Get(CancellationToken cancellationToken)
+        public async Task<List<UserResponseDto>> Get(CancellationToken cancellationToken)
         {
             var users = await _userManager.Users
                 .Include(u => u.UserRoles)
@@ -26,7 +26,7 @@ namespace BaseProject.Application.Services
                 .Include(u => u.Avatar)
                 .ToListAsync(cancellationToken: cancellationToken);
 
-            List<UserDto> result = users.Select(x => new UserDto
+            List<UserResponseDto> result = users.Select(x => new UserResponseDto
             {
                 Id = x.Id,
                 Email = x.Email,

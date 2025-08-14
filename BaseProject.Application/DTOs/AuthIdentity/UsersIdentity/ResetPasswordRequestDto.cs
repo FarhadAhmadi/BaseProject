@@ -1,6 +1,6 @@
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+namespace BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 
 [SwaggerSchema("Represents the reset password request model.")]
 public class ResetPasswordRequestDto

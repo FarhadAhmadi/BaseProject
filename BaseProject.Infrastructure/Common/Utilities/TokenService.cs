@@ -1,5 +1,5 @@
 ﻿using BaseProject.Application.Common.Interfaces;
-using BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Enums;
@@ -66,9 +66,9 @@ namespace BaseProject.Infrastructure.Common.Utilities
             return principal;
         }
 
-        public async Task<TokenResultDto> GenerateToken(ApplicationUser user, string[] scopes, CancellationToken cancellationToken)
+        public async Task<TokenResponseDto> GenerateToken(ApplicationUser user, string[] scopes, CancellationToken cancellationToken)
         {
-            var result = new TokenResultDto();
+            var result = new TokenResponseDto();
 
             var roles = await _userManager.GetRolesAsync(user);
 

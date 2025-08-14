@@ -2,7 +2,7 @@
 using BaseProject.Application;
 using BaseProject.Domain.Configurations;
 using BaseProject.Infrastructure.Persistence;
-using BaseProject.InfrastructureAPI;
+using BaseProject.Infrastructure;
 
 namespace BaseProject.API.Extensions
 {

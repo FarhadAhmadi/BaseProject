@@ -1,8 +1,8 @@
 ﻿using BaseProject.Domain.Enums;
 
-namespace BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+namespace BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 
-public class UserDto
+public class UserResponseDto
 {
     public string? Id { get; set; }
     public string? FullName { get; set; }

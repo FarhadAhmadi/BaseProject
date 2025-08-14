@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BaseProject.InfrastructureAPI;
+namespace BaseProject.Infrastructure;
 
 public static class ConfigureServices
 {
@@ -36,7 +36,7 @@ public static class ConfigureServices
                 .AddDefaultTokenProviders();
 
         // register services
-        //services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         //services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();

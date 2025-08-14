@@ -6,12 +6,8 @@ namespace BaseProject.API.Extensions
 {
     public static class SwaggerExtension
     {
-        private static readonly string[] Value = ["Bearer"];
-
         public static IServiceCollection AddSwaggerOpenAPI(this IServiceCollection services, AppSettings appSettings)
         {
-            //services.AddFluentValidationRulesToSwagger();
-
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -21,11 +17,11 @@ namespace BaseProject.API.Extensions
                     Description = appSettings.ApplicationDetail.Description,
                     Contact = new OpenApiContact
                     {
-                        Email = "vothuongtruongnhon2002@gmail.com",
-                        Name = "Truong Nhon",
+                        Email = "farhadahmadi1413@gmail.com",
+                        Name = "Farhad Ahmadi",
                         Url = new Uri(appSettings.ApplicationDetail.ContactWebsite),
                     },
-                    License = new OpenApiLicense()
+                    License = new OpenApiLicense
                     {
                         Name = "MIT License",
                         Url = new Uri("https://opensource.org/licenses/MIT")
@@ -37,27 +33,37 @@ namespace BaseProject.API.Extensions
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 
-                // Add security definition for Bearer token
-                var securityScheme = new OpenApiSecurityScheme
+                // Add JWT Authorization to Swagger
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
                     Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
                     Scheme = "bearer",
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                };
-                options.AddSecurityDefinition("Bearer", securityScheme);
+                    BearerFormat = "JWT"
+                });
 
-                var securityRequirement = new OpenApiSecurityRequirement { { securityScheme, Value } };
-                options.AddSecurityRequirement(securityRequirement);
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
 
                 options.SchemaFilter<EnumSchemaFilter>();
                 options.DocumentFilter<HealthChecksFilter>();
                 options.EnableAnnotations();
             });
+
             return services;
         }
 
@@ -66,14 +72,20 @@ namespace BaseProject.API.Extensions
             app.UseSwagger(c =>
             {
                 c.RouteTemplate = "swagger/{documentName}/swagger.json";
-                c.PreSerializeFilters.Add((swaggerDoc, httpReq)
-                    => swaggerDoc.Servers = [new OpenApiServer { Url = appSettings.AppUrl }]);
+
+                c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                {
+                    swaggerDoc.Servers = new[]
+                    {
+                        new OpenApiServer { Url = "https://localhost:7240" }
+                    };
+                });
             });
 
             app.UseSwaggerUI(setupAction =>
             {
-                setupAction.SwaggerEndpoint("v1/swagger.json", "CleanArchitecture.api v1");
-                setupAction.RoutePrefix = "swagger";
+                setupAction.SwaggerEndpoint("/swagger/v1/swagger.json", "BaseProject.api v1");
+                setupAction.RoutePrefix = "swagger"; // URL: https://localhost:7240/swagger
             });
         }
     }

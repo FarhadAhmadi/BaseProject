@@ -1,7 +1,7 @@
 using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Utilities;
-using BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Enums;
@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security.Claims;
-using LoginRequestDto = BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity.LoginRequestDto;
-using RegisterRequestDto = BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity.RegisterRequestDto;
-using ResetPasswordRequestDto = BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity.ResetPasswordRequestDto;
+using LoginRequestDto = BaseProject.Application.DTOs.AuthIdentity.UsersIdentity.LoginRequestDto;
+using RegisterRequestDto = BaseProject.Application.DTOs.AuthIdentity.UsersIdentity.RegisterRequestDto;
+using ResetPasswordRequestDto = BaseProject.Application.DTOs.AuthIdentity.UsersIdentity.ResetPasswordRequestDto;
 
 namespace BaseProject.Application.Services
 {
@@ -42,7 +42,7 @@ namespace BaseProject.Application.Services
             await _signInManager.SignOutAsync();
         }
 
-        public async Task<TokenResultDto> Authenticate(LoginRequestDto request, CancellationToken cancellationToken)
+        public async Task<TokenResponseDto> Authenticate(LoginRequestDto request, CancellationToken cancellationToken)
         {
             var user = await _userManager.Users
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
@@ -106,7 +106,7 @@ namespace BaseProject.Application.Services
         }
 
         //Refresh Token
-        public async Task<TokenResultDto> RefreshTokenAsync(string token, CancellationToken cancellationToken)
+        public async Task<TokenResponseDto> RefreshTokenAsync(string token, CancellationToken cancellationToken)
         {
             var user = await _userManager.Users.Include(x => x.RefreshTokens)
                                                .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
@@ -132,12 +132,12 @@ namespace BaseProject.Application.Services
             return result;
         }
 
-        public async Task<UserDto> Get(CancellationToken cancellationToken)
+        public async Task<UserResponseDto> Get(CancellationToken cancellationToken)
         {
             var users = await _userManager.Users
                         .Include(u => u.UserRoles)
                             .ThenInclude(ur => ur.Role)
-                        .Include(u => u.Avatar).Select(x => new UserDto
+                        .Include(u => u.Avatar).Select(x => new UserResponseDto
                         {
                             Id = x.Id,
                             Email = x.Email,

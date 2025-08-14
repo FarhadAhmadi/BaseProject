@@ -1,4 +1,4 @@
-﻿using BaseProject.Application.DTOs.Common;
+﻿using BaseProject.Application.DTOs;
 using BaseProject.Shared.DTOs.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

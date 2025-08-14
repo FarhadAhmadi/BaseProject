@@ -1,4 +1,5 @@
 using BaseProject.API.Extensions;
+using BaseProject.API.Middlewares;
 using BaseProject.Domain.Authorization;
 using BaseProject.Domain.Configurations;
 using FluentValidation;
@@ -16,7 +17,7 @@ public static class ConfigureServices
     public static IServiceCollection AddWebAPIService(this IServiceCollection services, AppSettings appSettings)
     {
         services.AddEndpointsApiExplorer();
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        //services.AddAutoMapper(Assembly.GetExecutingAssembly());
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
@@ -31,7 +32,7 @@ public static class ConfigureServices
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
         //// Middleware
-        //services.AddSingleton<GlobalExceptionMiddleware>();
+        //services.AddSingleton<ExceptionHandlingMiddleware>();
         //services.AddSingleton<PerformanceMiddleware>();
         //services.AddSingleton<Stopwatch>();
 

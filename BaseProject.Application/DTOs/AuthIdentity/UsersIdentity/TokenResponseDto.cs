@@ -1,6 +1,6 @@
-﻿namespace BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+﻿namespace BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 
-public class TokenResultDto
+public class TokenResponseDto
 {
     public string UserId { get; set; }
 

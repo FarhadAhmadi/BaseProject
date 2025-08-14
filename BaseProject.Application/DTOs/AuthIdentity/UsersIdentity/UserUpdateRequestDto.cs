@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace BaseProject.Application.DTOs.Common.AuthIdentity.UsersIdentity;
+namespace BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 
 public class UserUpdateRequestDto
 {
