@@ -193,8 +193,12 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             //Getting token from otp
-            var resetPasswordDetails = await _unitOfWork.ForgotPasswordRepository.FirstOrDefaultAsync(
-                filter: x => x.OTP == request.OTP && x.UserId == user.Id.ToString(), x => x.DateTime, false);
+            var resetPasswordDetails = await _unitOfWork.ForgotPasswordRepository.GetFirstOrDefaultAsync<ForgotPassword>(
+                filter: x => x.OTP == request.OTP && x.UserId == user.Id.ToString(),
+                orderBy: x => x.DateTime,
+                ascending: false
+            );
+
 
             //Verify if token is older than 3 minutes
             var expirationDateTime = resetPasswordDetails.DateTime.AddMinutes(3);

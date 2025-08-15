@@ -108,7 +108,9 @@ namespace BaseProject.Infrastructure.Common.Utilities
                 Expires = expires,
                 Created = DateTime.UtcNow
             };
-            var checkToken = await _unitOfWork.RefreshTokenRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+            var checkToken = await _unitOfWork.RefreshTokenRepository.GetFirstOrDefaultAsync<RefreshToken>(
+                filter: r => r.UserId == user.Id
+            );
 
             //if refresh token is not exist, then add new one
             if (checkToken == null)

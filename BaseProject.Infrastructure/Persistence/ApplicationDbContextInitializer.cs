@@ -26,8 +26,8 @@ namespace BaseProject.Infrastructure.Persistence
 
         public async Task SeedUser()
         {
-            await _context.Users.AddRangeAsync(
-            new List<User>{
+            var usersToAdd = new List<User>
+            {
                 new User
                 {
                     UserName = "admin",
@@ -41,9 +41,20 @@ namespace BaseProject.Infrastructure.Persistence
                     Email = "user@gmail.com",
                     Password = "P@ssw0rd".Hash(),
                     Role = Domain.Enums.Role.User
-                },
                 }
-            );
+            };
+
+            foreach (var user in usersToAdd)
+            {
+                var exists = await _context.Users
+                    .AnyAsync(u => u.UserName == user.UserName || u.Email == user.Email);
+
+                if (!exists)
+                {
+                    await _context.Users.AddAsync(user);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
     }

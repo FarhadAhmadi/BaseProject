@@ -51,7 +51,9 @@ namespace BaseProject.Application.Services
             //Luu Avatar vào Host
             if (request.MediaFile != null)
             {
-                var thumb = await _unitOfWork.MediaRepository.FirstOrDefaultAsync(i => i.MediaId == user.AvatarId);
+                var thumb = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(
+                    filter: x => x.MediaId == user.AvatarId
+                );
 
                 //C?p nh?t Avatar
                 if (thumb.PathMedia != null)
@@ -80,8 +82,9 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByIdAsync(userId)
                 ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
 
-            //Xoá Avatar ra kh?i Source
-            var avatar = await _unitOfWork.MediaRepository.FirstOrDefaultAsync(x => x.MediaId == user.AvatarId);
+            var avatar = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(
+                filter: x => x.MediaId == user.AvatarId
+            );
 
             if (avatar != null)
             {

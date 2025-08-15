@@ -4,7 +4,7 @@
     {
         public string Id { get; init; } = Guid.NewGuid().ToString();
 
-        public DateTimeOffset CreatedOn { get; set; }
+        public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.Now;
         public string? CreatorId { get; set; }
 
         public DateTimeOffset? UpdatedOn { get; set; }
