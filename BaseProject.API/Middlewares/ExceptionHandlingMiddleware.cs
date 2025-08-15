@@ -1,13 +1,12 @@
-using BaseProject.API.Extensions;
+﻿using BaseProject.API.Extensions;
 using BaseProject.Application.Common.Exceptions;
 using BaseProject.Shared.DTOs.Common;
-using CorrelationId.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System.IO;
+using System;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -28,35 +27,31 @@ namespace BaseProject.API.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var traceId = context.TraceIdentifier;
-            var correlationContextAccessor = context.RequestServices.GetService<ICorrelationContextAccessor>();
-            var correlationId = correlationContextAccessor?.CorrelationContext?.CorrelationId ?? traceId;
-
             try
             {
                 await _next(context);
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(context, ex, traceId, correlationId);
+                await HandleExceptionAsync(context, ex);
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception exception, string traceId, string correlationId)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            string body = "[Unavailable]";
+            string requestBody = "[Unavailable]";
             try
             {
                 if (_env.IsDevelopment() && !context.Request.Body.CanSeek)
                     context.Request.EnableBuffering();
 
-                body = _env.IsDevelopment()
+                requestBody = _env.IsDevelopment()
                     ? await context.ReadRequestBodyAsync(SensitiveKeys)
                     : "[Hidden in production]";
             }
-            catch (Exception ex)
+            catch (Exception readEx)
             {
-                Log.Warning(ex, "Failed to read request body | TraceId: {TraceId}", traceId);
+                Log.Warning(readEx, "Failed to read request body");
             }
 
             int statusCode = StatusCodes.Status500InternalServerError;
@@ -66,11 +61,30 @@ namespace BaseProject.API.Middlewares
             {
                 statusCode = (int)friendlyEx.ErrorCode;
                 response = ResponseDto<object>.FailResponse(friendlyEx.Message);
-                Log.Warning(exception, "Handled FriendlyException | TraceId: {TraceId}", traceId);
+
+                if (_env.IsDevelopment())
+                {
+                    Log.Warning(exception, "Handled FriendlyException | Body: {Body}", requestBody);
+                }
+                else
+                {
+                    Log.Warning("Handled FriendlyException | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
+                        Activity.Current?.Id,
+                        context.Request.Headers["X-Correlation-ID"].FirstOrDefault());
+                }
             }
             else
             {
-                Log.Error(exception, "Unhandled exception | TraceId: {TraceId} | Body: {Body}", traceId, body);
+                if (_env.IsDevelopment())
+                {
+                    Log.Error(exception, "Unhandled exception | Body: {Body}", requestBody);
+                }
+                else
+                {
+                    Log.Error(exception, "Unhandled exception | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
+                        Activity.Current?.Id,
+                        context.Request.Headers["X-Correlation-ID"].FirstOrDefault());
+                }
             }
 
             if (!context.Response.HasStarted)
@@ -84,20 +98,20 @@ namespace BaseProject.API.Middlewares
                     {
                         response.Success,
                         response.Message,
-                        TraceId = traceId,
-                        CorrelationId = correlationId
+                        TraceId = Activity.Current?.Id,
+                        CorrelationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
                     }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
                     await context.Response.WriteAsync(json);
                 }
                 catch (Exception writeEx)
                 {
-                    Log.Error(writeEx, "Failed to write exception response | TraceId: {TraceId}", traceId);
+                    Log.Error(writeEx, "Failed to write exception response");
                 }
             }
             else
             {
-                Log.Warning("Response already started. Cannot write exception body | TraceId: {TraceId}", traceId);
+                Log.Warning("Response already started. Cannot write exception body");
             }
         }
     }
