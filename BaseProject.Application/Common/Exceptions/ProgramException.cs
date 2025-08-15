@@ -8,6 +8,6 @@ namespace BaseProject.Application.Common.Exceptions
     public static class ProgramException
     {
         public static FriendlyException AppsettingNotSetException()
-            => new(ErrorCode.Internal, ErrorMessage.AppConfigurationMessage, ErrorMessage.InternalError);
+            => new(ApiErrorCode.InternalServerError, ErrorMessage.AppConfigurationMessage, ErrorMessage.InternalServerError);
     }
 }

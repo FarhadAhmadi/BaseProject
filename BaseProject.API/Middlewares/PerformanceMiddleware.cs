@@ -22,13 +22,6 @@ namespace BaseProject.API.Middlewares
             var correlationContextAccessor = context.RequestServices.GetService<ICorrelationContextAccessor>();
             var correlationId = correlationContextAccessor?.CorrelationContext?.CorrelationId ?? traceId;
 
-            Log.Debug("Request started | Method: {Method} | Path: {Path} | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
-                context.Request.Method,
-                context.Request.Path,
-                traceId,
-                correlationId
-            );
-
             await _next(context);
 
             stopwatch.Stop();

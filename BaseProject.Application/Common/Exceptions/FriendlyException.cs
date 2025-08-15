@@ -5,9 +5,9 @@ namespace BaseProject.Application.Common.Exceptions
     public class FriendlyException : Exception
     {
         public string UserFriendlyMessage { get; set; }
-        public ErrorCode ErrorCode { get; set; }
+        public ApiErrorCode ErrorCode { get; set; }
 
-        public FriendlyException(ErrorCode errorCode, string userFriendlyMessage, Exception? innerException = null)
+        public FriendlyException(ApiErrorCode errorCode, string userFriendlyMessage, Exception? innerException = null)
             : base(userFriendlyMessage, innerException)
         {
             ErrorCode = errorCode;
@@ -20,7 +20,7 @@ namespace BaseProject.Application.Common.Exceptions
             UserFriendlyMessage = userFriendlyMessage;
         }
 
-        public FriendlyException(ErrorCode errorCode, string message, string userFriendlyMessage, Exception? innerException = null)
+        public FriendlyException(ApiErrorCode errorCode, string message, string userFriendlyMessage, Exception? innerException = null)
             : base(message, innerException)
         {
             ErrorCode = errorCode;

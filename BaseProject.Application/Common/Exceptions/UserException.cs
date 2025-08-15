@@ -8,15 +8,15 @@ namespace BaseProject.Application.Common.Exceptions
     public static class UserException
     {
         public static FriendlyException  UserAlreadyExistsException(string field)
-            => new(ErrorCode.BadRequest, string.Format(UserErrorMessage.AlreadyExists, field), string.Format(UserErrorMessage.AlreadyExists, field));
+            => new(ApiErrorCode.BadRequest, string.Format(UserErrorMessage.AlreadyExists, field), string.Format(UserErrorMessage.AlreadyExists, field));
 
         public static FriendlyException  UserUnauthorizedException()
-            => new(ErrorCode.Unauthorized, UserErrorMessage.Unauthorized, UserErrorMessage.Unauthorized);
+            => new(ApiErrorCode.Unauthorized, UserErrorMessage.Unauthorized, UserErrorMessage.Unauthorized);
 
         public static FriendlyException  InternalException(Exception? exception)
-            => new(ErrorCode.Internal, ErrorMessage.InternalError, ErrorMessage.InternalError, exception);
+            => new(ApiErrorCode.InternalServerError, ErrorMessage.InternalServerError, ErrorMessage.InternalServerError, exception);
 
         public static FriendlyException  BadRequestException(string errorMessage)
-            => new(ErrorCode.BadRequest, errorMessage, errorMessage);
+            => new(ApiErrorCode.BadRequest, errorMessage, errorMessage);
     }
 }

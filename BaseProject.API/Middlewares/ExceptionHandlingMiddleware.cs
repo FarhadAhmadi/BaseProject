@@ -1,15 +1,15 @@
+using BaseProject.API.Extensions;
+using BaseProject.Application.Common.Exceptions;
+using BaseProject.Shared.DTOs.Common;
+using CorrelationId.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using CorrelationId.Abstractions;
-using System.Net;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Linq;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using BaseProject.API.Extensions;
 
 namespace BaseProject.API.Middlewares
 {
@@ -44,81 +44,60 @@ namespace BaseProject.API.Middlewares
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception, string traceId, string correlationId)
         {
-            context.Response.ContentType = "application/problem+json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            var headers = context.Request.Headers.ToDictionary(
-                h => h.Key,
-                h => IsSensitiveKey(h.Key) ? "****" : string.Join(",", h.Value)
-            );
-
-            var query = context.Request.Query.ToDictionary(
-                q => q.Key,
-                q => IsSensitiveKey(q.Key) ? "****" : string.Join(",", q.Value)
-            );
-
-            // Optional: Read and mask request body safely
-            string body = await ReadRequestBodyAsync(context);
-
-            Log.Error(exception,
-                "Unhandled exception | TraceId: {TraceId} | CorrelationId: {CorrelationId} | Method: {Method} | Path: {Path} | Query: {Query} | Headers: {Headers} | Body: {Body}",
-                traceId,
-                correlationId,
-                context.Request.Method,
-                context.Request.Path,
-                query,
-                headers,
-                body
-            );
-
-            var problemDetails = new
-            {
-                type = "https://httpstatuses.io/500",
-                title = "An unexpected error occurred.",
-                status = context.Response.StatusCode,
-                detail = _env.IsDevelopment() ? exception.ToString() : "Internal Server Error",
-                instance = context.Request.Path,
-                traceId,
-                correlationId
-            };
-
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var result = JsonSerializer.Serialize(problemDetails, options);
-
-            await context.Response.WriteAsync(result);
-        }
-
-        private static bool IsSensitiveKey(string key) =>
-            SensitiveKeys.Contains(key, System.StringComparer.OrdinalIgnoreCase);
-
-        private static async Task<string> ReadRequestBodyAsync(HttpContext context)
-        {
+            string body = "[Unavailable]";
             try
             {
-                context.Request.EnableBuffering();
-                using var reader = new StreamReader(
-                    context.Request.Body,
-                    Encoding.UTF8,
-                    detectEncodingFromByteOrderMarks: false,
-                    leaveOpen: true
-                );
+                if (_env.IsDevelopment() && !context.Request.Body.CanSeek)
+                    context.Request.EnableBuffering();
 
-                var body = await reader.ReadToEndAsync();
-                context.Request.Body.Position = 0;
-
-                // Optional: Mask sensitive keys in JSON body
-                if (!string.IsNullOrWhiteSpace(body) && body.TrimStart().StartsWith("{"))
-                {
-                    using var doc = JsonDocument.Parse(body);
-                    var masked = doc.RootElement.MaskSensitiveJson();
-                    return masked;
-                }
-
-                return body;
+                body = _env.IsDevelopment()
+                    ? await context.ReadRequestBodyAsync(SensitiveKeys)
+                    : "[Hidden in production]";
             }
-            catch
+            catch (Exception ex)
             {
-                return "[Unable to read body]";
+                Log.Warning(ex, "Failed to read request body | TraceId: {TraceId}", traceId);
+            }
+
+            int statusCode = StatusCodes.Status500InternalServerError;
+            var response = ResponseDto<object>.FailResponse("An unexpected error occurred.");
+
+            if (exception is FriendlyException friendlyEx)
+            {
+                statusCode = (int)friendlyEx.ErrorCode;
+                response = ResponseDto<object>.FailResponse(friendlyEx.Message);
+                Log.Warning(exception, "Handled FriendlyException | TraceId: {TraceId}", traceId);
+            }
+            else
+            {
+                Log.Error(exception, "Unhandled exception | TraceId: {TraceId} | Body: {Body}", traceId, body);
+            }
+
+            if (!context.Response.HasStarted)
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = statusCode;
+
+                try
+                {
+                    var json = JsonSerializer.Serialize(new
+                    {
+                        response.Success,
+                        response.Message,
+                        TraceId = traceId,
+                        CorrelationId = correlationId
+                    }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+                    await context.Response.WriteAsync(json);
+                }
+                catch (Exception writeEx)
+                {
+                    Log.Error(writeEx, "Failed to write exception response | TraceId: {TraceId}", traceId);
+                }
+            }
+            else
+            {
+                Log.Warning("Response already started. Cannot write exception body | TraceId: {TraceId}", traceId);
             }
         }
     }

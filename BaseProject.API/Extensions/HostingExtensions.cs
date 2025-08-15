@@ -78,19 +78,12 @@ namespace BaseProject.API.Extensions
                 Log.Information("Using in-memory database. Skipping initialization.");
             }
 
-            app.UseCorrelationId();
-            Log.Information("Correlation ID middleware enabled.");
-
-            // Serilog automatic request logging
-            app.UseSerilogRequestLogging(options =>
-            {
-                options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-            });
-            Log.Information("Serilog request logging enabled.");
-
             // Global Exception Middleware
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             Log.Information("Exception handling middleware configured.");
+
+            app.UseCorrelationId();
+            Log.Information("Correlation ID middleware enabled.");
 
             // Logging and performance tracking middlewares
             app.UseMiddleware<LoggingMiddleware>();

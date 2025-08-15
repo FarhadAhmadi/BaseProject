@@ -31,67 +31,62 @@ namespace BaseProject.API.Extensions
                             // Handle user-friendly exceptions based on error codes
                             switch (userFriendlyException.ErrorCode)
                             {
-                                case ErrorCode.NotFound:
+                                case ApiErrorCode.NotFound:
                                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.NOT_FOUND.ToString();
                                     break;
-                                case ErrorCode.Conflict:
+                                case ApiErrorCode.Conflict:
                                     context.Response.StatusCode = (int)HttpStatusCode.Conflict;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.CONFLICT.ToString();
                                     break;
-                                case ErrorCode.BadRequest:
+                                case ApiErrorCode.BadRequest:
                                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.BAD_REQUEST.ToString();
                                     break;
-                                case ErrorCode.Unauthorized:
+                                case ApiErrorCode.Unauthorized:
                                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.UNAUTHORIZED.ToString();
                                     break;
-                                case ErrorCode.Forbidden:
+                                case ApiErrorCode.Forbidden:
                                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.FORBIDDEN.ToString();
                                     break;
-                                case ErrorCode.Unauthenticated:
-                                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                                    errorMessage = userFriendlyException.UserFriendlyMessage;
-                                    errorCode = ErrorRespondCode.UNAUTHENTICATED.ToString();
-                                    break;
-                                case ErrorCode.Timeout:
+                                case ApiErrorCode.RequestTimeout:
                                     context.Response.StatusCode = (int)HttpStatusCode.RequestTimeout;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.TIMEOUT.ToString();
                                     break;
-                                case ErrorCode.ServiceUnavailable:
+                                case ApiErrorCode.ServiceUnavailable:
                                     context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.SERVICE_UNAVAILABLE.ToString();
                                     break;
-                                case ErrorCode.TooManyRequests:
+                                case ApiErrorCode.TooManyRequests:
                                     context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.TOO_MANY_REQUESTS.ToString();
                                     break;
-                                case ErrorCode.InvalidOperation:
+                                case ApiErrorCode.InvalidOperation:
                                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.INVALID_OPERATION.ToString();
                                     break;
-                                case ErrorCode.UnsupportedMediaType:
+                                case ApiErrorCode.UnsupportedMediaType:
                                     context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.UNSUPPORTED_MEDIA_TYPE.ToString();
                                     break;
-                                case ErrorCode.GatewayTimeout:
+                                case ApiErrorCode.GatewayTimeout:
                                     context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.GATEWAY_TIMEOUT.ToString();
                                     break;
-                                case ErrorCode.MethodNotAllowed:
+                                case ApiErrorCode.MethodNotAllowed:
                                     context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                                     errorMessage = userFriendlyException.UserFriendlyMessage;
                                     errorCode = ErrorRespondCode.METHOD_NOT_ALLOWED.ToString();
@@ -112,7 +107,7 @@ namespace BaseProject.API.Extensions
                         }
 
                         // Construct a user-friendly response
-                        var errorResponse = ResponseDto<string>.Fail(errorMessage);
+                        var errorResponse = ResponseDto<string>.FailResponse(errorMessage);
 
                         // Return error response to the client
                         await context.Response.WriteAsJsonAsync(errorResponse);
