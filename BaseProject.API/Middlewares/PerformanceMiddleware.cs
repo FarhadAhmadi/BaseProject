@@ -1,27 +1,47 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using CorrelationId.Abstractions;
+using Serilog;
 
 namespace BaseProject.API.Middlewares
 {
     public class PerformanceMiddleware
     {
-        private readonly ILogger<PerformanceMiddleware> _logger;
-        private readonly Stopwatch _stopwatch;
         private readonly RequestDelegate _next;
 
-        public PerformanceMiddleware(RequestDelegate next, ILogger<PerformanceMiddleware> logger)
+        public PerformanceMiddleware(RequestDelegate next)
         {
             _next = next;
-            _logger =   logger;
-            _stopwatch = new Stopwatch();
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            _stopwatch.Restart();
-            await _next(context);
-            _stopwatch.Stop();
+            var stopwatch = Stopwatch.StartNew();
 
-            _logger.LogInformation("Time taken: {timeTaken}", _stopwatch.Elapsed.ToString(@"m\:ss\.fff"));
+            var traceId = context.TraceIdentifier;
+            var correlationContextAccessor = context.RequestServices.GetService<ICorrelationContextAccessor>();
+            var correlationId = correlationContextAccessor?.CorrelationContext?.CorrelationId ?? traceId;
+
+            Log.Debug("Request started | Method: {Method} | Path: {Path} | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
+                context.Request.Method,
+                context.Request.Path,
+                traceId,
+                correlationId
+            );
+
+            await _next(context);
+
+            stopwatch.Stop();
+
+            Log.Information(
+                "Request completed | Method: {Method} | Path: {Path} | StatusCode: {StatusCode} | TimeTaken: {Elapsed}ms | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
+                context.Request.Method,
+                context.Request.Path,
+                context.Response.StatusCode,
+                stopwatch.ElapsedMilliseconds,
+                traceId,
+                correlationId
+            );
         }
     }
 }

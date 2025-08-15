@@ -24,7 +24,7 @@ namespace BaseProject.API.Extensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(identitySettings.Key)),
                     ValidateIssuerSigningKey = true,
                 };
-                options.Authority = identitySettings.Issuer;
+                //options.Authority = identitySettings.Issuer;
                 options.RequireHttpsMetadata = identitySettings.ValidateHttps;
             });
 
@@ -76,7 +76,7 @@ namespace BaseProject.API.Extensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(identitySettings.Key)),
                     ValidateIssuerSigningKey = true,
                 };
-                options.Authority = identitySettings.Issuer;
+                //options.Authority = identitySettings.Issuer;
                 options.RequireHttpsMetadata = identitySettings.ValidateHttps;
             });
 

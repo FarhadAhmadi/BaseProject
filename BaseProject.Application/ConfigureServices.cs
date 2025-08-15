@@ -5,6 +5,7 @@ using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace BaseProject.Application;
 
@@ -12,9 +13,11 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddApplicationService(this IServiceCollection services, AppSettings appsettings)
     {
+        Log.Information("Registering AutoMapper profiles...");
         services.AddAutoMapper(typeof(MapProfile).Assembly);
+        Log.Information("AutoMapper configured successfully.");
 
-
+        Log.Information("Registering application services...");
         services.AddTransient<IUserContext, UserContext>();
         services.AddTransient<IAuthService, AuthService>();
         //services.AddTransient<IBookService, BookService>();
@@ -29,18 +32,19 @@ public static class ConfigureServices
         if (appsettings.FileStorageSettings.LocalStorage)
         {
             services.AddSingleton<IFileService, LocalStorageService>();
+            Log.Information("Configured file storage: LocalStorageService.");
         }
         else
         {
             services.AddSingleton<IFileService, CloudinaryStorageService>();
+            Log.Information("Configured file storage: CloudinaryStorageService.");
         }
 
-
         services.AddTransient<IUserService, UserService>();
-
         services.AddTransient<ICurrentTime, CurrentTime>();
         services.AddScoped<ICurrentUser, CurrentUser>();
 
+        Log.Information("Application services registered successfully.");
 
         return services;
     }

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Serilog;
 
 namespace BaseProject.API;
 
@@ -16,35 +17,58 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddWebAPIService(this IServiceCollection services, AppSettings appSettings)
     {
+        Log.Information("Configuring Web API services...");
+
         services.AddEndpointsApiExplorer();
-        //services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        Log.Information("Endpoints API Explorer registered.");
+
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
+        Log.Information("FluentValidation configured.");
+
         services.SetupMvc();
+        Log.Information("MVC configured.");
+
         if (appSettings.Identity.IsLocal)
         {
             services.AddAuthLocal(appSettings.Identity);
+            Log.Information("Local authentication configured.");
         }
-        services.AddAuth(appSettings.Identity);
+        else
+        {
+            services.AddAuth(appSettings.Identity);
+            Log.Information("Authentication configured.");
+        }
+
+
         services.AddDistributedMemoryCache();
         services.AddMemoryCache();
-        services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+        Log.Information("Memory cache configured.");
 
-        //// Middleware
-        //services.AddSingleton<ExceptionHandlingMiddleware>();
-        //services.AddSingleton<PerformanceMiddleware>();
-        //services.AddSingleton<Stopwatch>();
+        services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+        Log.Information("Authorization handler registered.");
 
         // Extension classes
         services.AddHealthChecks();
-        services.AddCompressionCustom();
-        services.AddCorsCustom(appSettings);
-        services.AddHttpClient();
-        services.AddSwaggerOpenAPI(appSettings);
-        services.SetupHealthCheck(appSettings);
+        Log.Information("Health checks registered.");
 
-        // Json configuration
+        services.AddCompressionCustom();
+        Log.Information("Response compression configured.");
+
+        services.AddCorsCustom(appSettings);
+        Log.Information("CORS configured.");
+
+        services.AddHttpClient();
+        Log.Information("HttpClient registered.");
+
+        services.AddSwaggerOpenAPI(appSettings);
+        Log.Information("Swagger/OpenAPI configured.");
+
+        services.SetupHealthCheck(appSettings);
+        Log.Information("Health check endpoints configured.");
+
+        // JSON configuration
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.WriteIndented = true;
@@ -52,6 +76,9 @@ public static class ConfigureServices
             options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
+        Log.Information("JSON serializer options configured.");
+
+        Log.Information("Web API services registration completed.");
         return services;
     }
 }
