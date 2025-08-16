@@ -51,7 +51,7 @@ namespace BaseProject.Application.Services
             //Luu Avatar vào Host
             if (request.MediaFile != null)
             {
-                var thumb = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(
+                var thumb = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
                     filter: x => x.MediaId == user.AvatarId
                 );
 
@@ -65,7 +65,7 @@ namespace BaseProject.Application.Services
                 thumb.FileSize = request.MediaFile.Length;
                 thumb.PathMedia = pathMedia.Path;
 
-                await _unitOfWork.ExecuteTransactionAsync(() => _unitOfWork.MediaRepository.Update(thumb), cancellationToken);
+                await _unitOfWork.ExecuteInTransactionAsync(() => _unitOfWork.Media.Update(thumb), cancellationToken);
             }
 
             var result = await _userManager.UpdateAsync(user);
@@ -82,7 +82,7 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByIdAsync(userId)
                 ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
 
-            var avatar = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(
+            var avatar = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
                 filter: x => x.MediaId == user.AvatarId
             );
 
@@ -90,7 +90,7 @@ namespace BaseProject.Application.Services
             {
                 if (avatar.PathMedia != null)
                     await _storageService.DeleteFileAsync(new DTOs.File.DeleteFileRequestDto { FileName = avatar.PathMedia });
-                await _unitOfWork.ExecuteTransactionAsync(() => _unitOfWork.MediaRepository.Delete(avatar), cancellationToken);
+                await _unitOfWork.ExecuteInTransactionAsync(() => _unitOfWork.Media.Delete(avatar), cancellationToken);
             }
 
             var result = await _userManager.DeleteAsync(user);

@@ -1,4 +1,4 @@
-using BaseProject.Application.Common.Interfaces;
+﻿using BaseProject.Application.Common.Interfaces;
 using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
@@ -16,19 +16,32 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, AppSettings configuration)
     {
+        services.AddScoped<AuditInterceptor>();
+
         if (configuration.UseInMemoryDatabase)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("CleanArchitecture"));
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                var interceptor = sp.GetRequiredService<AuditInterceptor>();
+                options.UseInMemoryDatabase("CleanArchitecture")
+                       .AddInterceptors(interceptor);
+            });
         }
         else
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.ConnectionStrings.DefaultConnection,
-                sqlOptions => sqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 5,
-                    maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorNumbersToAdd: null)));
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                var interceptor = sp.GetRequiredService<AuditInterceptor>();
+
+                options.UseSqlServer(
+                    configuration.ConnectionStrings.DefaultConnection,
+                    sqlOptions => sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorNumbersToAdd: null
+                    )
+                ).AddInterceptors(interceptor);
+            });
         }
 
         services.AddIdentity<ApplicationUser, RoleIdentity>()

@@ -108,15 +108,15 @@ namespace BaseProject.Infrastructure.Common.Utilities
                 Expires = expires,
                 Created = DateTime.UtcNow
             };
-            var checkToken = await _unitOfWork.RefreshTokenRepository.GetFirstOrDefaultAsync<RefreshToken>(
+            var checkToken = await _unitOfWork.RefreshTokens.GetFirstOrDefaultAsync<RefreshToken>(
                 filter: r => r.UserId == user.Id
             );
 
             //if refresh token is not exist, then add new one
             if (checkToken == null)
             {
-                await _unitOfWork.ExecuteTransactionAsync(
-                    async () => await _unitOfWork.RefreshTokenRepository.AddAsync(refreshToken), cancellationToken);
+                await _unitOfWork.ExecuteInTransactionAsync(
+                    async () => await _unitOfWork.RefreshTokens.AddAsync(refreshToken), cancellationToken);
             }
             //if refresh token is exist and valid, then update it
             else if (checkToken.Expires > DateTime.UtcNow)
@@ -124,18 +124,18 @@ namespace BaseProject.Infrastructure.Common.Utilities
                 checkToken.Token = tokenResult;
                 checkToken.Expires = expires;
                 checkToken.Created = DateTime.UtcNow;
-                await _unitOfWork.ExecuteTransactionAsync(
-                    () => _unitOfWork.RefreshTokenRepository.Update(refreshToken), cancellationToken);
+                await _unitOfWork.ExecuteInTransactionAsync(
+                    () => _unitOfWork.RefreshTokens.Update(refreshToken), cancellationToken);
 
             }
             //if refresh token is exist and expired, then delete it and add new one
             else
             {
-                await _unitOfWork.ExecuteTransactionAsync(
+                await _unitOfWork.ExecuteInTransactionAsync(
                     async () =>
                     {
-                        _unitOfWork.RefreshTokenRepository.Delete(refreshToken);
-                        await _unitOfWork.RefreshTokenRepository.AddAsync(refreshToken);
+                        _unitOfWork.RefreshTokens.Delete(refreshToken);
+                        await _unitOfWork.RefreshTokens.AddAsync(refreshToken);
                     }, cancellationToken);
             }
             return result;

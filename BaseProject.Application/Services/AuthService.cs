@@ -31,7 +31,7 @@ namespace BaseProject.Application.Services
             Log.Information("SignIn started | UserName: {UserName}", request.UserName);
 
             //var user = await _unitOfWork.UserRepository.FirstOrDefaultAsync(x => x.UserName == request.UserName);
-            var user = await _unitOfWork.UserRepository.GetFirstOrDefaultAsync<User>(
+            var user = await _unitOfWork.Users.GetFirstOrDefaultAsync<User>(
                 filter: x => x.UserName == request.UserName,
                 selector: x => new User
                 {
@@ -70,17 +70,17 @@ namespace BaseProject.Application.Services
         {
             Log.Information("SignUp started | UserName: {UserName} | Email: {Email}", request.UserName, request.Email);
 
-            if (await _unitOfWork.UserRepository.ExistsAsync(x => x.UserName == request.UserName))
+            if (await _unitOfWork.Users.ExistsAsync(x => x.UserName == request.UserName))
                 throw UserException.UserAlreadyExistsException(request.UserName);
 
-            if (await _unitOfWork.UserRepository.ExistsAsync(x => x.Email == request.Email))
+            if (await _unitOfWork.Users.ExistsAsync(x => x.Email == request.Email))
                 throw UserException.UserAlreadyExistsException(request.Email);
 
             var user = _mapper.Map<User>(request);
             user.Password = user.Password.Hash();
 
-            await _unitOfWork.ExecuteTransactionAsync(async () =>
-                await _unitOfWork.UserRepository.AddAsync(user), token
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
+                await _unitOfWork.Users.AddAsync(user), token
             );
 
             var response = _mapper.Map<UserSignUpResponseDto>(user);

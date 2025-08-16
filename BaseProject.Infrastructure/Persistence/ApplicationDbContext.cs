@@ -22,6 +22,7 @@ namespace BaseProject.Infrastructure.Persistence
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<ForgotPassword> ForgotPassword { get; set; }
         public DbSet<Media> Media { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

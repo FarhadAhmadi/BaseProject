@@ -174,8 +174,8 @@ namespace BaseProject.Application.Services
             };
 
             //save data into db with OTP
-            await _unitOfWork.ExecuteTransactionAsync(
-                async () => await _unitOfWork.ForgotPasswordRepository.AddAsync(resetPassword), cancellationToken);
+            await _unitOfWork.ExecuteInTransactionAsync(
+                async () => await _unitOfWork.ForgotPasswords.AddAsync(resetPassword), cancellationToken);
 
             //To do: Send token in email
             await _emailSender.SendEmailAsync(request.Email, "Reset Password OTP", "Hello "
@@ -193,7 +193,7 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             //Getting token from otp
-            var resetPasswordDetails = await _unitOfWork.ForgotPasswordRepository.GetFirstOrDefaultAsync<ForgotPassword>(
+            var resetPasswordDetails = await _unitOfWork.ForgotPasswords.GetFirstOrDefaultAsync<ForgotPassword>(
                 filter: x => x.OTP == request.OTP && x.UserId == user.Id.ToString(),
                 orderBy: x => x.DateTime,
                 ascending: false

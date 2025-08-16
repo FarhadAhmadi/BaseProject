@@ -5,79 +5,126 @@ using BaseProject.Infrastructure.Persistence.Repositories;
 
 namespace BaseProject.Infrastructure.Persistence.UnitOfWork
 {
+    /// <summary>
+    /// Implements the Unit of Work pattern to manage repositories and database transactions.
+    /// Ensures all repository operations within a transaction are committed or rolled back together.
+    /// </summary>
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly ApplicationDbContext _context;
-
+        private readonly ApplicationDbContext _dbContext;
         private readonly SqlDapperContext _dapperContext;
 
-        public IUserRepository UserRepository { get; }
-        //public IBookRepository BookRepository { get; }
-        //public ICategoryRepository CategoryRepository { get; }
-        public IRefreshTokenRepository RefreshTokenRepository { get; }
-        public IMediaRepository MediaRepository { get; }
-        public IForgotPasswordRepository ForgotPasswordRepository { get; }
+        #region Repositories
 
-        //public IAuthorRepository AuthorRepository { get; }
+        /// <summary>
+        /// Repository for managing user entities.
+        /// </summary>
+        public IUserRepository Users { get; }
 
-        //public IPublisherRepository PublisherRepository { get; }
+        /// <summary>
+        /// Repository for managing refresh tokens.
+        /// </summary>
+        public IRefreshTokenRepository RefreshTokens { get; }
 
+        /// <summary>
+        /// Repository for managing media files.
+        /// </summary>
+        public IMediaRepository Media { get; }
+
+        /// <summary>
+        /// Repository for managing forgot password requests.
+        /// </summary>
+        public IForgotPasswordRepository ForgotPasswords { get; }
+
+        #endregion
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitOfWork"/> class.
+        /// </summary>
+        /// <param name="dbContext">EF Core DbContext for database operations.</param>
+        /// <param name="dapperContext">Dapper context for direct SQL operations.</param>
         public UnitOfWork(ApplicationDbContext dbContext, SqlDapperContext dapperContext)
         {
-            _context = dbContext;
+            _dbContext = dbContext;
             _dapperContext = dapperContext;
-            UserRepository = new UserRepository(_context, _dapperContext);
-            //BookRepository = new BookRepository(_context, _dapperContext);
-            RefreshTokenRepository = new RefreshTokenRepository(_context, _dapperContext);
-            MediaRepository = new MediaRepository(_context, _dapperContext);
-            ForgotPasswordRepository = new ForgotPasswordRepository(_context, _dapperContext);
-            //AuthorRepository = new AuthorRepository(_context, _dapperContext);
-            //PublisherRepository = new PublisherRepository(_context, _dapperContext);
-            //CategoryRepository = new CategoryRepository(_context, _dapperContext);
-        }
-        public async Task SaveChangesAsync(CancellationToken token)
-            => await _context.SaveChangesAsync(token);
 
-        public async Task ExecuteTransactionAsync(Action action, CancellationToken token)
+            Users = new UserRepository(_dbContext, _dapperContext);
+            RefreshTokens = new RefreshTokenRepository(_dbContext, _dapperContext);
+            Media = new MediaRepository(_dbContext, _dapperContext);
+            ForgotPasswords = new ForgotPasswordRepository(_dbContext, _dapperContext);
+        }
+
+        #region Save Changes
+
+        /// <summary>
+        /// Saves all changes made in the current DbContext to the database asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            var strategy = _context.Database.CreateExecutionStrategy();
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        #endregion
+
+        #region Transaction Handling
+
+        /// <summary>
+        /// Executes a synchronous operation within a database transaction.
+        /// Commits if successful, rolls back if an exception occurs.
+        /// </summary>
+        /// <param name="action">Synchronous action to execute.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <exception cref="TransactionException">Throws when transaction fails.</exception>
+        public async Task ExecuteInTransactionAsync(Action action, CancellationToken cancellationToken)
+        {
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
             await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync(token);
+                using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
                 try
                 {
                     action();
-                    await _context.SaveChangesAsync(token);
-                    await transaction.CommitAsync(token);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync(token);
+                    await transaction.RollbackAsync(cancellationToken);
                     throw TransactionException.TransactionNotExecuteException(ex);
                 }
-
             });
         }
 
-        public async Task ExecuteTransactionAsync(Func<Task> action, CancellationToken token)
+        /// <summary>
+        /// Executes an asynchronous operation within a database transaction.
+        /// Commits if successful, rolls back if an exception occurs.
+        /// </summary>
+        /// <param name="action">Asynchronous action to execute.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <exception cref="TransactionException">Throws when transaction fails.</exception>
+        public async Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken)
         {
-            var strategy = _context.Database.CreateExecutionStrategy();
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
             await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync(token);
+                using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
                 try
                 {
                     await action();
-                    await _context.SaveChangesAsync(token);
-                    await transaction.CommitAsync(token);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync(token);
+                    await transaction.RollbackAsync(cancellationToken);
                     throw TransactionException.TransactionNotExecuteException(ex);
                 }
             });
         }
 
+        #endregion
     }
 }

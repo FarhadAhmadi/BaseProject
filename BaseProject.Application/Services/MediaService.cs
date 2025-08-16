@@ -18,7 +18,7 @@ namespace BaseProject.Application.Services
         // Xóa media
         public async Task RemoveMediaAsync(string mediaId, CancellationToken cancellationToken)
         {
-            var media = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(
+            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
                 filter: x => x.MediaId == mediaId
             );
 
@@ -33,8 +33,8 @@ namespace BaseProject.Application.Services
                 await _storageService.DeleteFileAsync(new DTOs.File.DeleteFileRequestDto { FileName = media.PathMedia });
                 _logger.LogInformation($"File {media.PathMedia} has been deleted.");
             }
-            await _unitOfWork.ExecuteTransactionAsync(() =>
-                _unitOfWork.MediaRepository.Delete(media), cancellationToken
+            await _unitOfWork.ExecuteInTransactionAsync(() =>
+                _unitOfWork.Media.Delete(media), cancellationToken
             );
             _logger.LogInformation($"Media with id {mediaId} has been removed.");
         }
@@ -42,7 +42,7 @@ namespace BaseProject.Application.Services
         // C?p nh?t media
         public async Task UpdateMediaAsync(string mediaId, MediaCreateRequestDto request, CancellationToken cancellationToken)
         {
-            var media = await _unitOfWork.MediaRepository.GetFirstOrDefaultAsync<Media>(filter: x => x.MediaId == mediaId);
+            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(filter: x => x.MediaId == mediaId);
             if (media == null)
             {
                 _logger.LogWarning($"Cannot find media with id {mediaId}");
@@ -55,8 +55,8 @@ namespace BaseProject.Application.Services
                 media.PathMedia = pathMedia.Path;
                 media.FileSize = request.MediaFile.Length;
             }
-            await _unitOfWork.ExecuteTransactionAsync(() =>
-               _unitOfWork.MediaRepository.Update(media), cancellationToken
+            await _unitOfWork.ExecuteInTransactionAsync(() =>
+               _unitOfWork.Media.Update(media), cancellationToken
            );
 
             _logger.LogInformation($"Media with id {mediaId} has been updated.");
