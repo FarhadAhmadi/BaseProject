@@ -34,9 +34,9 @@ Retrieves paginated data from a table using Dapper.
 
 - **Parameters:**
   - `tableName` – Database table name
-  - `pageIndex` – Page number (1-based)
-  - `pageSize` – Number of records per page
-  - `selector` – Projection selector
+  - `pageIndex` – Page number (default: `0`)
+  - `pageSize` – Number of records per page (default: `10`)
+  - `selector` – Projection selector (default: `null`)
   - `orderByColumn` – Column name to order by (default: `Id`)
   - `ascending` – Sort direction (default: `true`)
 - **Returns:** `PaginatedList<TResult>` – Paginated result
@@ -61,7 +61,7 @@ Retrieves a projected entity by ID using Dapper.
 - **Parameters:**
   - `tableName` – Database table name
   - `id` – Primary key
-  - `selector` – Projection expression
+  - `selector` – Projection expression (default: `null`)
 - **Returns:** `TResult?` – Projected result or null
 
 ---
