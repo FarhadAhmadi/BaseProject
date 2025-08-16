@@ -1,15 +1,27 @@
-﻿using BaseProject.Application.Common.Interfaces;
-using BaseProject.Domain.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using BaseProject.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
 namespace BaseProject.Infrastructure.Persistence
 {
-    public class AuditInterceptor(ICurrentUser currentUser) : SaveChangesInterceptor
+    public class AuditInterceptor : SaveChangesInterceptor
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public AuditInterceptor(IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetCurrentUserId()
+        {
+            // If user is authenticated, get their ID, else return "system"
+            return _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value ?? "system";
+        }
+
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
             DbContextEventData eventData,
             InterceptionResult<int> result,
@@ -33,7 +45,7 @@ namespace BaseProject.Infrastructure.Persistence
 
         private AuditLog CreateAuditEntry(EntityEntry entry)
         {
-            var userId = currentUser.GetCurrentUserId();
+            var userId = GetCurrentUserId();
 
             var changes = new Dictionary<string, object?>();
 

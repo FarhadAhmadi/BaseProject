@@ -1,6 +1,7 @@
 ﻿using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Serilog;
 
 namespace BaseProject.Infrastructure.Common.Utilities
 {
@@ -22,7 +23,13 @@ namespace BaseProject.Infrastructure.Common.Utilities
         public string Get()
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["token_key"];
-            return string.IsNullOrEmpty(token) ? throw UserException.UserUnauthorizedException() : token;
+            if (string.IsNullOrEmpty(token))
+            {
+                Log.Warning("No token found in cookies for current request.");
+                throw UserException.UserUnauthorizedException();
+            }
+
+            return token;
         }
     }
 }

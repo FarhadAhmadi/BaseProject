@@ -5,10 +5,16 @@ using Microsoft.Extensions.Logging;
 
 namespace BaseProject.Infrastructure.Persistence
 {
-    public class ApplicationDbContextInitializer(ApplicationDbContext context, ILoggerFactory logger)
+    public class ApplicationDbContextInitializer
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly ILogger _logger = logger.CreateLogger<ApplicationDbContextInitializer>();
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger _logger;
+
+        public ApplicationDbContextInitializer(ApplicationDbContext context, ILoggerFactory logger)
+        {
+            _context = context;
+            _logger = logger.CreateLogger<ApplicationDbContextInitializer>();
+        }
 
         public async Task InitializeAsync()
         {
@@ -27,22 +33,22 @@ namespace BaseProject.Infrastructure.Persistence
         public async Task SeedUser()
         {
             var usersToAdd = new List<User>
+        {
+            new User
             {
-                new User
-                {
-                    UserName = "admin",
-                    Email = "admin@gmail.com",
-                    Password = "P@ssw0rd".Hash(),
-                    Role = Domain.Enums.Role.Admin
-                },
-                new User
-                {
-                    UserName = "user",
-                    Email = "user@gmail.com",
-                    Password = "P@ssw0rd".Hash(),
-                    Role = Domain.Enums.Role.User
-                }
-            };
+                UserName = "admin",
+                Email = "admin@gmail.com",
+                Password = "P@ssw0rd".Hash(),
+                Role = Domain.Enums.Role.Admin
+            },
+            new User
+            {
+                UserName = "user",
+                Email = "user@gmail.com",
+                Password = "P@ssw0rd".Hash(),
+                Role = Domain.Enums.Role.User
+            }
+        };
 
             foreach (var user in usersToAdd)
             {

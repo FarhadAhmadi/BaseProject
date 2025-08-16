@@ -23,16 +23,13 @@ public static class ConfigureServices
             services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
                 var interceptor = sp.GetRequiredService<AuditInterceptor>();
-                options.UseInMemoryDatabase("CleanArchitecture")
-                       .AddInterceptors(interceptor);
+                options.UseInMemoryDatabase("CleanArchitecture");
             });
         }
         else
         {
             services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
-                var interceptor = sp.GetRequiredService<AuditInterceptor>();
-
                 options.UseSqlServer(
                     configuration.ConnectionStrings.DefaultConnection,
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
@@ -40,7 +37,7 @@ public static class ConfigureServices
                         maxRetryDelay: TimeSpan.FromSeconds(10),
                         errorNumbersToAdd: null
                     )
-                ).AddInterceptors(interceptor);
+                );
             });
         }
 
