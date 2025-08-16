@@ -21,14 +21,13 @@ namespace BaseProject.Domain.Interfaces
         /// <summary>
         /// Retrieves paginated data using Dapper.
         /// </summary>
-        Task<PaginatedList<TResult>> GetPaginatedAsync_Dapper<T, TResult>(
+        Task<PaginatedList<TResult>> GetPaginatedAsync_Dapper<TResult>(
             string tableName,
-            int pageIndex,
-            int pageSize,
-            Expression<Func<T, TResult>> selector,
+            int pageIndex = 0,
+            int pageSize = 10,
+            Expression<Func<T, TResult>>? selector = null,
             string? orderByColumn = "Id",
-            bool ascending = true
-        ) where T : BaseEntity;
+            bool ascending = true);
 
         /// <summary>
         /// Gets an entity by ID using Dapper.
@@ -47,7 +46,7 @@ namespace BaseProject.Domain.Interfaces
         /// <summary>
         /// Checks if an entity exists using Dapper.
         /// </summary>
-        Task<bool> ExistsAsync_Dapper<T>(string tableName, string id);
+        Task<bool> ExistsAsync_Dapper(string tableName, object id);
 
         #endregion
 
@@ -120,8 +119,8 @@ namespace BaseProject.Domain.Interfaces
         /// Retrieves paginated data with optional filters, includes, and sorting.
         /// </summary>
         Task<PaginatedList<TResult>> GetPaginatedAsync<TResult>(
-            int pageIndex,
-            int pageSize,
+            int pageIndex = 0,
+            int pageSize = 10,
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IQueryable<T>>? include = null,
             Expression<Func<T, object>>? orderBy = null,

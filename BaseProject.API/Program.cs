@@ -18,7 +18,7 @@ try
                            .ConfigurePipelineAsync(configuration);
 
     // Log that app is starting
-    var port = app.Urls.FirstOrDefault() ?? "default port";
+    var port = configuration.AppUrl ?? "default port";
     Log.Information("Application running on port {Port}", port);
     Log.Information("Environment: {Environment}", builder.Environment.EnvironmentName);
     Log.Information("UseInMemoryDatabase: {UseInMemoryDatabase}", configuration.UseInMemoryDatabase);
