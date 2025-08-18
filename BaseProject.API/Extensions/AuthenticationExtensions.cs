@@ -1,5 +1,6 @@
 ﻿using BaseProject.Domain.Authorization;
 using BaseProject.Domain.Configurations;
+using BaseProject.Shared.DTOs.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +27,32 @@ namespace BaseProject.API.Extensions
                 };
                 //options.Authority = identitySettings.Issuer;
                 options.RequireHttpsMetadata = identitySettings.ValidateHttps;
+                // Add custom error response
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = async context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var response = ResponseDto<object>.FailResponse(
+                            message: "Authentication failed.",
+                            data: context.Exception?.Message
+                        );
+
+                        await context.Response.WriteAsJsonAsync(response);
+                    },
+
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse(); // suppress default 401 response
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var response = ResponseDto<object>.FailResponse("Authentication failed.");
+                        await context.Response.WriteAsJsonAsync(response);
+                    }
+                };
             });
 
             //custom policy scheme using AddPolicyScheme in ASP.NET Core, it allows you to dynamically choose an authentication scheme based on the incoming request. This is useful if you have multiple authentication methods (e.g., JWT Bearer, Cookies, etc.)
@@ -78,7 +105,34 @@ namespace BaseProject.API.Extensions
                 };
                 //options.Authority = identitySettings.Issuer;
                 options.RequireHttpsMetadata = identitySettings.ValidateHttps;
+                // Add custom error response
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = async context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var response = ResponseDto<object>.FailResponse(
+                            message: "Authentication failed.",
+                            data: context.Exception?.Message
+                        );
+
+                        await context.Response.WriteAsJsonAsync(response);
+                    },
+
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse(); // suppress default 401 response
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var response = ResponseDto<object>.FailResponse("Authentication failed.");
+                        await context.Response.WriteAsJsonAsync(response);
+                    }
+                };
             });
+
 
             //custom policy scheme using AddPolicyScheme in ASP.NET Core, it allows you to dynamically choose an authentication scheme based on the incoming request. This is useful if you have multiple authentication methods (e.g., JWT Bearer, Cookies, etc.)
             // MAKE YOUR PROJECT RESPONSE LONGER

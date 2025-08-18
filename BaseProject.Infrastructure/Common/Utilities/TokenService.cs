@@ -50,13 +50,12 @@ namespace BaseProject.Infrastructure.Common.Utilities
         public ClaimsPrincipal ValidateToken(string token)
         {
             IdentityModelEventSource.ShowPII = true;
-            TokenValidationParameters validationParameters = new()
+            var validationParameters = new TokenValidationParameters
             {
-                ValidIssuer = _appSettings.Identity.Issuer,
-                ValidAudience = _appSettings.Identity.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Identity.Key)),
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidIssuer = _appSettings.Identity.Issuer,
+                ValidateAudience = false, // temporarily disable audience validation
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Identity.Key)),
                 ValidateLifetime = false,
                 ValidateIssuerSigningKey = true
             };
