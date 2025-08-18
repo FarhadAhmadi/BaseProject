@@ -1,23 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using BaseProject.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace BaseProject.Application.Common.Utilities
 {
     public static class StringHelper
     {
-        /// <summary>
-        /// Hashes the given string using BCrypt.
-        /// </summary>
-        public static string Hash(this string input)
-            => BCrypt.Net.BCrypt.HashPassword(input);
+        private static readonly PasswordHasher<ApplicationUser> _hasher = new();
 
         /// <summary>
-        /// Verifies that a plaintext string matches a hashed password.
+        /// Hashes the given string using Identity's PasswordHasher.
         /// </summary>
-        public static bool Verify(this string input, string hashedPassword)
-            => BCrypt.Net.BCrypt.Verify(input, hashedPassword);
+        public static string HashPassword(this string password)
+        {
+            // Pass null if you don't have a user object
+            return _hasher.HashPassword(null, password);
+        }
+
+        /// <summary>
+        /// Verifies that a plaintext string matches a hashed password using Identity's PasswordHasher.
+        /// </summary>
+        public static bool VerifyPassword(this string password, string hashedPassword)
+        {
+            var result = _hasher.VerifyHashedPassword(null, hashedPassword, password);
+            return result == PasswordVerificationResult.Success
+                || result == PasswordVerificationResult.SuccessRehashNeeded;
+        }
 
         private static readonly Random _random = new();
 

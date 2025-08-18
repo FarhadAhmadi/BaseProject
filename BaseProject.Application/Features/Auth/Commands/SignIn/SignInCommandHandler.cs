@@ -50,7 +50,7 @@ public sealed partial class SignInCommandHandler
 
         Log.Debug("User found | UserId: {UserId}", user.Id);
 
-        if (!StringHelper.Verify(request.Password, user.Password))
+        if (!StringHelper.VerifyPassword(request.Password, user.Password))
             throw UserException.BadRequestException(UserErrorMessage.PasswordIncorrect);
 
         Log.Debug("Password verified successfully | UserId: {UserId}", user.Id);

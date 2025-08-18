@@ -33,22 +33,22 @@ namespace BaseProject.Infrastructure.Persistence
         public async Task SeedUser()
         {
             var usersToAdd = new List<User>
-        {
-            new User
             {
-                UserName = "admin",
-                Email = "admin@gmail.com",
-                Password = "P@ssw0rd".Hash(),
-                Role = Domain.Enums.Role.Admin
-            },
-            new User
-            {
-                UserName = "user",
-                Email = "user@gmail.com",
-                Password = "P@ssw0rd".Hash(),
-                Role = Domain.Enums.Role.User
-            }
-        };
+                new User
+                {
+                    UserName = "admin",
+                    Email = "admin@gmail.com",
+                    Password = "P@ssw0rd".HashPassword(),
+                    Role = Domain.Enums.Role.Admin
+                },
+                new User
+                {
+                    UserName = "user",
+                    Email = "user@gmail.com",
+                    Password = "P@ssw0rd".HashPassword(),
+                    Role = Domain.Enums.Role.User
+                }
+            };
 
             foreach (var user in usersToAdd)
             {

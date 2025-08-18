@@ -29,7 +29,7 @@ public sealed class SignUpCommandHandler
             throw UserException.UserAlreadyExistsException($"{request.UserName}/{request.Email}");
 
         var user = _mapper.Map<User>(request);
-        user.Password = user.Password.Hash();
+        user.Password = user.Password.HashPassword();
 
         await _unitOfWork.ExecuteInTransactionAsync(
             async () => await _unitOfWork.Users.AddAsync(user),

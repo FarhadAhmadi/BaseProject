@@ -1,4 +1,5 @@
-﻿using BaseProject.Domain.Entities;
+﻿using BaseProject.Application.Common.Utilities;
+using BaseProject.Domain.Entities;
 using BaseProject.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,6 @@ namespace BaseProject.Infrastructure.Persistence
                 NormalizedName = Role.User.ToString(),
             });
 
-            var hashed = new PasswordHasher<ApplicationUser>();
             modelBuilder.Entity<ApplicationUser>().HasData(new ApplicationUser
             {
                 Id = adminId,
@@ -42,7 +42,7 @@ namespace BaseProject.Infrastructure.Persistence
                 Email = "admin@gmail.com",
                 NormalizedEmail = "ADMIN@GMAIL.COM",
                 EmailConfirmed = true,
-                PasswordHash = hashed.HashPassword(null, "P@ssw0rd"),
+                PasswordHash = "P@ssw0rd".HashPassword(),
                 SecurityStamp = string.Empty,
                 Name = "Admin 1",
             });
