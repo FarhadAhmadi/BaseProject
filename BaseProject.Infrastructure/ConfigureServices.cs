@@ -5,7 +5,6 @@ using BaseProject.Domain.Interfaces;
 using BaseProject.Infrastructure.Common.Utilities;
 using BaseProject.Infrastructure.Persistence;
 using BaseProject.Infrastructure.Persistence.Repositories;
-using BaseProject.Infrastructure.Persistence.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

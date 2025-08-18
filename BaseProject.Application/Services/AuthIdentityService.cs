@@ -162,7 +162,7 @@ namespace BaseProject.Application.Services
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             //Generate OTP
-            int otp = StringHelper.GenerateRandom(100000, 999999);
+            int otp = NumberHelper.GenerateRandom(100000, 999999);
 
             var resetPassword = new ForgotPassword()
             {

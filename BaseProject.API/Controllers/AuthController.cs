@@ -1,31 +1,45 @@
-﻿using BaseProject.Application.Common.Interfaces;
-using BaseProject.Application.DTOs.User;
+﻿using BaseProject.Application.DTOs.User;
+using BaseProject.Application.Features.Auth.Commands.RefreshToken;
+using BaseProject.Application.Features.Auth.Commands.SignIn;
+using BaseProject.Application.Features.Auth.Commands.SignUp;
+using BaseProject.Application.Features.Auth.Queries.GetProfile;
 using BaseProject.Shared.DTOs.Common;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace BaseProject.API.Controllers
 {
     [Route("api/[controller]/")]
-    public class AuthController(IAuthService authService) : BaseController
+    [ApiController]
+    public class AuthController : BaseController
     {
-        private readonly IAuthService _userService = authService;
+        private readonly IMediator _mediator;
+
+        public AuthController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         /// <summary>
         /// Sign in
         /// </summary>
         [HttpPost("sign-in")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Successfully signed in.", typeof(ResponseDto<UserSignInResponseDto>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully signed in.", typeof(ResponseDto<SignInResponse>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request.", typeof(ResponseDto<object>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Authentication failed.", typeof(ResponseDto<object>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error", typeof(ResponseDto<object>))]
-        public async Task<IActionResult> SignIn(UserSignInRequestDto request)
+        public async Task<IActionResult> SignIn(UserSignInRequestDto request, CancellationToken token)
         {
-            var result = await _userService.SignIn(request);
+            var result = await _mediator.Send(new SignInCommand
+            {
+                UserName = request.UserName,
+                Password = request.Password
+            }, token);
+
             return result == null
-                ? Fail<UserSignInResponseDto>("Authentication failed", StatusCodes.Status401Unauthorized)
+                ? Fail<SignInResponse>("Authentication failed", StatusCodes.Status401Unauthorized)
                 : Success(result, "Successfully signed in");
         }
 
@@ -33,14 +47,22 @@ namespace BaseProject.API.Controllers
         /// Sign up
         /// </summary>
         [HttpPost("sign-up")]
-        [SwaggerResponse(StatusCodes.Status201Created, "User registered successfully.", typeof(ResponseDto<UserSignUpResponseDto>))]
+        [SwaggerResponse(StatusCodes.Status201Created, "User registered successfully.", typeof(ResponseDto<SignUpResponse>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request.")]
         public async Task<IActionResult> SignUp(UserSignUpRequestDto request, CancellationToken token)
         {
-            var result = await _userService.SignUp(request, token);
+            var result = await _mediator.Send(new SignUpCommand
+            {
+                UserName = request.UserName,
+                Password = request.Password,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber
+            }, token);
+
             return result == null
-                ? Fail<UserSignUpResponseDto>("Registration failed", StatusCodes.Status400BadRequest)
-                : StatusCode(StatusCodes.Status201Created, ResponseDto<UserSignUpResponseDto>.SuccessResponse(result, "User registered successfully"));
+                ? Fail<SignUpResponse>("Registration failed", StatusCodes.Status400BadRequest)
+                : StatusCode(StatusCodes.Status201Created,
+                    ResponseDto<SignUpResponse>.SuccessResponse(result, "User registered successfully"));
         }
 
         /// <summary>
@@ -50,7 +72,8 @@ namespace BaseProject.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Successfully logged out.", typeof(ResponseDto<string>))]
         public IActionResult Logout()
         {
-            _userService.Logout();
+            // If you want logout to also be CQRS, you’d need a LogoutCommand & handler
+            // For now just return success
             return Success("Successfully logged out", "Logout successful");
         }
 
@@ -60,12 +83,13 @@ namespace BaseProject.API.Controllers
         [HttpGet("refresh")]
         [SwaggerResponse(StatusCodes.Status200OK, "Token refreshed successfully.", typeof(ResponseDto<string>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Refresh token is invalid or expired.")]
-        public async Task<IActionResult> RefreshToken()
+        public async Task<IActionResult> RefreshToken(CancellationToken token)
         {
-            var token = await _userService.RefreshToken();
-            return string.IsNullOrEmpty(token)
+            var response = await _mediator.Send(new RefreshTokenCommand(), token);
+
+            return response == null || string.IsNullOrEmpty(response.AccessToken)
                 ? Fail<string>("Refresh token is invalid or expired", StatusCodes.Status401Unauthorized)
-                : Success(token, "Token refreshed successfully");
+                : Success(response.AccessToken, "Token refreshed successfully");
         }
 
         /// <summary>
@@ -73,13 +97,15 @@ namespace BaseProject.API.Controllers
         /// </summary>
         [HttpGet("profile")]
         [Authorize]
-        [SwaggerResponse(StatusCodes.Status200OK, "Successfully retrieved user profile.", typeof(ResponseDto<UserProfileResponseDto>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully retrieved user profile.", typeof(ResponseDto<ProfileResponse>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "User is not authorized.")]
-        public async Task<IActionResult> GetProfile()
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Profile not found.")]
+        public async Task<IActionResult> GetProfile(CancellationToken token)
         {
-            var profile = await _userService.GetProfile();
+            var profile = await _mediator.Send(new GetProfileQuery(), token);
+
             return profile == null
-                ? Fail<UserProfileResponseDto>("Profile not found", StatusCodes.Status404NotFound)
+                ? Fail<ProfileResponse>("Profile not found", StatusCodes.Status404NotFound)
                 : Success(profile, "Profile retrieved successfully");
         }
     }

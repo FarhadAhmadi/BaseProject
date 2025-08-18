@@ -1,5 +1,8 @@
 using AutoMapper;
 using BaseProject.Application.DTOs.User;
+using BaseProject.Application.Features.Auth.Commands.SignIn;
+using BaseProject.Application.Features.Auth.Commands.SignUp;
+using BaseProject.Application.Features.Auth.Queries.GetProfile;
 using BaseProject.Domain.Entities;
 using BaseProject.Shared.DTOs.Common;
 
@@ -10,10 +13,10 @@ public class MapProfile : Profile
     public MapProfile()
     {
         CreateMap<User, UserSignInRequestDto>().ReverseMap();
-        CreateMap<User, UserSignInResponseDto>().ReverseMap();
+        CreateMap<User, SignInResponse>().ReverseMap();
         CreateMap<User, UserSignUpRequestDto>().ReverseMap();
-        CreateMap<User, UserSignUpResponseDto>().ReverseMap();
-        CreateMap<User, UserProfileResponseDto>().ReverseMap();
+        CreateMap<User, SignUpResponse>().ReverseMap();
+        CreateMap<User, ProfileResponse>().ReverseMap();
 
         CreateMap(typeof(PaginatedList<>), typeof(PaginatedList<>)).ConvertUsing(typeof(PaginationConverter<,>));
     }

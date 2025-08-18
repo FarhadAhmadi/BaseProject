@@ -1,12 +1,44 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
+using MediatR;
 
 namespace BaseProject.Application.Behaviours
 {
-    public class ValidationBehaviour
+    /// <summary>
+    /// Pipeline behavior to handle FluentValidation for requests.
+    /// </summary>
+    /// <typeparam name="TRequest">Request type</typeparam>
+    /// <typeparam name="TResponse">Response type</typeparam>
+    public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
+        private readonly IEnumerable<IValidator<TRequest>> _validators;
+
+        public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+        {
+            _validators = validators;
+        }
+
+        public async Task<TResponse> Handle(
+            TRequest request,
+            RequestHandlerDelegate<TResponse> next,
+            CancellationToken cancellationToken)
+        {
+            if (_validators.Any())
+            {
+                var context = new ValidationContext<TRequest>(request);
+                var failures = _validators
+                    .Select(v => v.Validate(context))
+                    .SelectMany(result => result.Errors)
+                    .Where(f => f != null)
+                    .ToList();
+
+                if (failures.Any())
+                {
+                    throw BaseProject.Application.Common.Exceptions.ValidationException.FromFailures(failures);
+                }
+            }
+
+            return await next();
+        }
     }
 }

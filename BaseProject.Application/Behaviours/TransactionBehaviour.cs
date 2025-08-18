@@ -1,12 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BaseProject.Domain.Interfaces;
+using MediatR;
 
-namespace BaseProject.Application.Behaviours
+public class TransactionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
 {
-    public class TransactionBehaviour
+    private readonly IUnitOfWork _unitOfWork;
+
+    public TransactionBehaviour(IUnitOfWork unitOfWork)
     {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    {
+        TResponse response = default;
+
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            response = await next();
+        }, cancellationToken);
+
+        return response;
     }
 }

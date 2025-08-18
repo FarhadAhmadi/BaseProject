@@ -29,5 +29,4 @@
         public const string OTPWrongMessage = "The OTP provided is incorrect.";
 
     }
-
 }

@@ -1,22 +1,30 @@
+using BaseProject.Application.Behaviours;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Mappings;
 using BaseProject.Application.Services;
 using BaseProject.Domain.Configurations;
-using BaseProject.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+using System.Reflection;
 
 namespace BaseProject.Application;
-
 public static class ConfigureServices
 {
     public static IServiceCollection AddApplicationService(this IServiceCollection services, AppSettings appsettings)
     {
+
+        // Register MediatR and scan assemblies for handlers
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+        });
+        services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandHandler.SignInCommandValidator>();
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
         services.AddAutoMapper(typeof(MapProfile).Assembly);
 
         services.AddTransient<IUserContext, UserContext>();
-        services.AddTransient<IAuthService, AuthService>();
         //services.AddTransient<IBookService, BookService>();
         //services.AddTransient<IAuthorService, AuthorService>();
         //services.AddTransient<IPublisherService, PublisherService>();

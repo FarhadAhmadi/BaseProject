@@ -137,7 +137,7 @@ namespace BaseProject.Infrastructure.Persistence.Repositories
 
         private List<string> ExtractSelectedColumns<TResult>(Expression<Func<T, TResult>> selector)
         {
-            return ExtracterHelper.ExtractSelectedColumns(selector);
+            return ColumnExtractor.GetSelectedColumns(selector);
         }
 
         private void ValidateTableAndColumn(string tableName, string columnName)
