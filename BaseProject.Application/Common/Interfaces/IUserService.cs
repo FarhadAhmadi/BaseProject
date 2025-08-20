@@ -9,5 +9,4 @@ namespace BaseProject.Application.Common.Interfaces
         Task Delete(string userId, CancellationToken cancellationToken);
         Task RoleAssign(RoleAssignRequestDto request, CancellationToken cancellationToken);
     }
-
 }

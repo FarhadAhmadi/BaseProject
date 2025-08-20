@@ -1,6 +1,7 @@
-﻿using BaseProject.Application.Common.Exceptions;
+﻿using BaseProject.API.Extensions;
+using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Interfaces;
 using BaseProject.Domain.Configurations;
-using BaseProject.API.Extensions;
 using Serilog;
 
 try
@@ -17,16 +18,19 @@ try
     var app = await builder.ConfigureServices(configuration)
                            .ConfigurePipelineAsync(configuration);
 
+    // Resolve logger from DI
+    var logger = app.Services.GetRequiredService<IAppLogger>();
+
     // Log that app is starting
     var port = configuration.AppUrl ?? "default port";
-    Log.Information("Application running on port {Port}", port);
-    Log.Information("Environment: {Environment}", builder.Environment.EnvironmentName);
-    Log.Information("UseInMemoryDatabase: {UseInMemoryDatabase}", configuration.UseInMemoryDatabase);
+    logger.Info("Application running on port {Port}", port);
+    logger.Info("Environment: {Environment}", builder.Environment.EnvironmentName);
+    logger.Info("UseInMemoryDatabase: {UseInMemoryDatabase}", configuration.UseInMemoryDatabase);
 
     // Optional: log all configured URLs
     foreach (var url in app.Urls)
     {
-        Log.Information("Listening on: {Url}", url);
+        logger.Info("Listening on: {Url}", url);
     }
 
     await app.RunAsync();

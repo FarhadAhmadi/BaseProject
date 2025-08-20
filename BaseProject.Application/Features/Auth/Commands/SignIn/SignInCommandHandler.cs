@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Extensions.PredefinedLogs;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Utilities;
 using BaseProject.Domain.Constants;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
 using MediatR;
-using Serilog;
+using Microsoft.AspNetCore.Http;
 
 namespace BaseProject.Application.Features.Auth.Commands.SignIn;
 
@@ -17,23 +18,28 @@ public sealed partial class SignInCommandHandler
     private readonly ITokenService _tokenService;
     private readonly ICookieService _cookieService;
     private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IAppLogger _appLogger;
+
 
     public SignInCommandHandler(
         IUnitOfWork unitOfWork,
         ITokenService tokenService,
         ICookieService cookieService,
-        IMapper mapper)
+        IMapper mapper,
+        IHttpContextAccessor httpContextAccessor,
+        IAppLogger appLogger)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
         _cookieService = cookieService;
         _mapper = mapper;
+        _httpContextAccessor = httpContextAccessor;
+        _appLogger = appLogger;
     }
 
     public async Task<SignInResponse> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
-        Log.Information("Sign in started for {UserName}", request.UserName);
-
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync<User>(
             filter: x => x.UserName == request.UserName,
             selector: x => new User
@@ -45,27 +51,25 @@ public sealed partial class SignInCommandHandler
             }
         );
 
-        if (user == null)
-            throw UserException.BadRequestException(UserErrorMessage.UserNotExist);
+        var invalidMessage = "Invalid username or password.";
 
-        Log.Debug("User found | UserId: {UserId}", user.Id);
+        _appLogger.LogLoginAttempt(request.UserName);
 
-        if (!StringHelper.VerifyPassword(request.Password, user.Password))
-            throw UserException.BadRequestException(UserErrorMessage.PasswordIncorrect);
+        if (user == null || !StringHelper.VerifyPassword(request.Password, user.Password))
+        {
+            _appLogger.LogLoginResult(user?.Id,false);
+            throw UserException.BadRequestException(invalidMessage);
+        }
 
-        Log.Debug("Password verified successfully | UserId: {UserId}", user.Id);
+        _appLogger.LogLoginResult(user?.Id, true);
 
         var token = _tokenService.GenerateToken(user);
         _cookieService.Set(token);
 
-        Log.Debug("Token generated and set in cookie | UserId: {UserId} | TokenLength: {TokenLength}",
-            user.Id, token.Length);
-
         var response = _mapper.Map<SignInResponse>(user);
         response.Token = token;
 
-        Log.Information("Sign in completed successfully | UserId: {UserId}", user.Id);
-
         return response;
+
     }
 }

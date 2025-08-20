@@ -1,14 +1,9 @@
 ﻿using BaseProject.API.Extensions;
 using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Interfaces;
 using BaseProject.Shared.DTOs.Common;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
-using Serilog;
-using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BaseProject.API.Middlewares
 {
@@ -16,13 +11,15 @@ namespace BaseProject.API.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IHostEnvironment _env;
+        private readonly IAppLogger _logger;
 
         private static readonly string[] SensitiveKeys = { "Authorization", "Cookie", "Set-Cookie", "password", "token" };
 
-        public ExceptionHandlingMiddleware(RequestDelegate next, IHostEnvironment env)
+        public ExceptionHandlingMiddleware(RequestDelegate next, IHostEnvironment env, IAppLogger logger)
         {
             _next = next;
             _env = env;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -51,40 +48,24 @@ namespace BaseProject.API.Middlewares
             }
             catch (Exception readEx)
             {
-                Log.Warning(readEx, "Failed to read request body");
+                _logger.Warning($"Failed to read request body: {readEx.Message}", Activity.Current?.Id ?? "N/A");
             }
 
             int statusCode = StatusCodes.Status500InternalServerError;
             var response = ResponseDto<object>.FailResponse("An unexpected error occurred.");
+
+            var traceId = Activity.Current?.Id ?? "N/A";
 
             if (exception is FriendlyException friendlyEx)
             {
                 statusCode = (int)friendlyEx.ErrorCode;
                 response = ResponseDto<object>.FailResponse(friendlyEx.Message);
 
-                if (_env.IsDevelopment())
-                {
-                    Log.Warning(exception, "Handled FriendlyException | Body: {Body}", requestBody);
-                }
-                else
-                {
-                    Log.Warning("Handled FriendlyException | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
-                        Activity.Current?.Id,
-                        context.Request.Headers["X-Correlation-ID"].FirstOrDefault());
-                }
+                _logger.Warning($"Handled FriendlyException | Body: {requestBody} | TraceId: {traceId}");
             }
             else
             {
-                if (_env.IsDevelopment())
-                {
-                    Log.Error(exception, "Unhandled exception | Body: {Body}", requestBody);
-                }
-                else
-                {
-                    Log.Error(exception, "Unhandled exception | TraceId: {TraceId} | CorrelationId: {CorrelationId}",
-                        Activity.Current?.Id,
-                        context.Request.Headers["X-Correlation-ID"].FirstOrDefault());
-                }
+                _logger.Error(exception, $"Unhandled exception | Body: {requestBody} | TraceId: {traceId}");
             }
 
             if (!context.Response.HasStarted)
@@ -94,24 +75,37 @@ namespace BaseProject.API.Middlewares
 
                 try
                 {
-                    var json = JsonSerializer.Serialize(new
-                    {
-                        response.Success,
-                        response.Message,
-                        TraceId = Activity.Current?.Id,
-                        CorrelationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
-                    }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                    var json = _env.IsDevelopment()
+                        ? JsonSerializer.Serialize(new
+                        {
+                            response.Success,
+                            response.Message,
+                            Exception = exception.Message,
+                            ExceptionType = exception.GetType().FullName,
+                            StackTrace = exception.StackTrace,
+                            InnerException = exception.InnerException?.Message,
+                            RequestBody = requestBody,
+                            TraceId = traceId,
+                            CorrelationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+                        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+                        : JsonSerializer.Serialize(new
+                        {
+                            response.Success,
+                            response.Message,
+                            TraceId = traceId,
+                            CorrelationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+                        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
                     await context.Response.WriteAsync(json);
                 }
                 catch (Exception writeEx)
                 {
-                    Log.Error(writeEx, "Failed to write exception response");
+                    _logger.Error(writeEx, $"Failed to write exception response | TraceId: {traceId}");
                 }
             }
             else
             {
-                Log.Warning("Response already started. Cannot write exception body");
+                _logger.Warning("Response already started. Cannot write exception body | TraceId: {TraceId}", traceId);
             }
         }
     }

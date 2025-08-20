@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Extensions.PredefinedLogs;
+using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Utilities;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
@@ -12,21 +14,25 @@ public sealed class SignUpCommandHandler
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IAppLogger _appLogger;
 
-    public SignUpCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public SignUpCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IAppLogger appLogger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _appLogger = appLogger;
     }
 
     public async Task<SignUpResponse> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
-        Log.Information("Sign up started for {UserName} with email {Email}",
-            request.UserName, request.Email);
+        _appLogger.LogSignUpAttempt(request.UserName, request.Email);
 
-        if (await _unitOfWork.Users.ExistsAsync(x => x.UserName == request.UserName
-                                                  || x.Email == request.Email))
+        if (await _unitOfWork.Users.ExistsAsync(x => x.UserName == request.UserName || x.Email == request.Email))
+        {
+            // Use predefined warning log pattern
+            _appLogger.LogSignUpResult(request.UserName,false);
             throw UserException.UserAlreadyExistsException($"{request.UserName}/{request.Email}");
+        }
 
         var user = _mapper.Map<User>(request);
         user.Password = user.Password.HashPassword();
@@ -37,8 +43,8 @@ public sealed class SignUpCommandHandler
         );
 
         var response = _mapper.Map<SignUpResponse>(user);
-
-        Log.Information("Sign up completed successfully | UserId: {UserId}", user.Id);
+        // Use predefined warning log pattern
+        _appLogger.LogSignUpResult(request.UserName, true);
 
         return response;
     }

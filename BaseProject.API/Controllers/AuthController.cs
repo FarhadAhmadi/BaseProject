@@ -80,7 +80,7 @@ namespace BaseProject.API.Controllers
         /// <summary>
         /// Refresh a token
         /// </summary>
-        [HttpGet("refresh")]
+        [HttpPost("refresh")]
         [SwaggerResponse(StatusCodes.Status200OK, "Token refreshed successfully.", typeof(ResponseDto<string>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Refresh token is invalid or expired.")]
         public async Task<IActionResult> RefreshToken(CancellationToken token)

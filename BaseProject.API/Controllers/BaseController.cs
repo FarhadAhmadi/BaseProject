@@ -9,11 +9,6 @@ namespace BaseProject.API.Controllers
     [Route("api/[controller]/")]
     public class BaseController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok("Test");
-        }
         protected IActionResult Success<T>(T data, string message) =>
             Ok(ResponseDto<T>.SuccessResponse(data, message));
 

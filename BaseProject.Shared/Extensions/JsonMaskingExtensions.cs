@@ -1,8 +1,13 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace BaseProject.API.Extensions
+namespace BaseProject.Shared.Extensions
 {
+
     public static class JsonMaskingExtensions
     {
         private static readonly string[] SensitiveKeys =

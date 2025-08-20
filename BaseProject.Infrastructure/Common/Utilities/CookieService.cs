@@ -5,9 +5,10 @@ using Serilog;
 
 namespace BaseProject.Infrastructure.Common.Utilities
 {
-    public class CookieService(IHttpContextAccessor httpContextAccessor) : ICookieService
+    public class CookieService(IHttpContextAccessor httpContextAccessor, IAppLogger appLogger) : ICookieService
     {
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IAppLogger _appLogger = appLogger;
         public void Set(string token)
             => _httpContextAccessor.HttpContext?.Response.Cookies.Append("token_key", token,
                     new CookieOptions
@@ -25,7 +26,7 @@ namespace BaseProject.Infrastructure.Common.Utilities
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["token_key"];
             if (string.IsNullOrEmpty(token))
             {
-                Log.Warning("No token found in cookies for current request.");
+                _appLogger.Warning("No token found in cookies for current request.");
                 throw UserException.UserUnauthorizedException();
             }
 

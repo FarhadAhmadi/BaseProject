@@ -1,4 +1,5 @@
-﻿using BaseProject.Application.Common.Interfaces;
+﻿using BaseProject.Application.Common.Extensions.PredefinedLogs;
+using BaseProject.Application.Common.Interfaces;
 using BaseProject.Domain.Interfaces;
 using MediatR;
 
@@ -11,17 +12,20 @@ public sealed class RefreshTokenCommandHandler
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
     private readonly ICookieService _cookieService;
+    private readonly IAppLogger _appLogger;
 
     public RefreshTokenCommandHandler(
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         ITokenService tokenService,
-        ICookieService cookieService)
+        ICookieService cookieService,
+        IAppLogger appLogger)
     {
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
         _cookieService = cookieService;
+        _appLogger = appLogger;
     }
 
     public async Task<RefreshTokenResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -32,8 +36,7 @@ public sealed class RefreshTokenCommandHandler
         var accessToken = _tokenService.GenerateToken(user);
         _cookieService.Set(accessToken);
 
-        Log.Information("Token refreshed successfully | UserId: {UserId} | TokenLength: {TokenLength}",
-            userId, accessToken.Length);
+        _appLogger.LogTokenRefresh(userId);
 
         return new RefreshTokenResponse
         {

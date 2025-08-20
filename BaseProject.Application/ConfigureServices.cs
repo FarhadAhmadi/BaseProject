@@ -1,3 +1,4 @@
+using BaseProject.API.Behaviors;
 using BaseProject.Application.Behaviours;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Mappings;
@@ -20,7 +21,11 @@ public static class ConfigureServices
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
         services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandHandler.SignInCommandValidator>();
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRRetryBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRLoggingAndExceptionBehavior<,>));
+
 
         services.AddAutoMapper(typeof(MapProfile).Assembly);
 

@@ -3,6 +3,7 @@ using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
 using BaseProject.Infrastructure.Common.Utilities;
+using BaseProject.Infrastructure.Logging;
 using BaseProject.Infrastructure.Persistence;
 using BaseProject.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,9 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, AppSettings configuration)
     {
+        // Register logger in DI
+        services.AddSingleton<IAppLogger, SerilogAppLogger>();
+
         services.AddScoped<AuditInterceptor>();
 
         if (configuration.UseInMemoryDatabase)

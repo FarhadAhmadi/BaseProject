@@ -17,10 +17,13 @@ namespace BaseProject.API.Extensions
             // Add database health check
             healthCheckBuilder.AddSqlServer(
                 connectionString: configuration.ConnectionStrings.DefaultConnection,
+                healthQuery: "SELECT 1;", // تست ساده
                 name: HealthCheck.DBHealthCheck,
                 failureStatus: HealthStatus.Unhealthy,
-                tags: new[] { HealthCheck.InfrastructureCheck }
+                tags: new[] { HealthCheck.InfrastructureCheck },
+                timeout: TimeSpan.FromSeconds(5)
             );
+
             if (configuration.EnableExternalHealthCheck)
             {
                 // Add external service health checks
