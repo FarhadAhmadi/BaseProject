@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace BaseProject.Application.Features.Auth.Commands.SignIn;
 
-public sealed partial class SignInCommandHandler
+public sealed class SignInCommandHandler
     : IRequestHandler<SignInCommand, SignInResponse>
 {
     private readonly IUnitOfWork _unitOfWork;

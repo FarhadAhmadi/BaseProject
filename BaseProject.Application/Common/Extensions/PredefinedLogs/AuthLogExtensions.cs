@@ -1,12 +1,5 @@
-﻿using Azure.Core;
-using BaseProject.Application.Common.Interfaces;
-using Microsoft.AspNetCore.Server.HttpSys;
-using System;
-using System.Collections.Generic;
+﻿using BaseProject.Application.Common.Interfaces;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BaseProject.Application.Common.Extensions.PredefinedLogs
 {

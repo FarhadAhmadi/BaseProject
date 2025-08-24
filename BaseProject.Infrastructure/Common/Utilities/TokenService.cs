@@ -85,7 +85,7 @@ namespace BaseProject.Infrastructure.Common.Utilities
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expires = DateTime.UtcNow.AddDays(_jwt.ExpiredTime);
+            var expires = DateTime.UtcNow.AddMinutes(_jwt.ExpiredTimeMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: _jwt.Issuer,

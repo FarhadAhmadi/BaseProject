@@ -12,9 +12,16 @@ namespace BaseProject.API.Extensions
     {
         public static void AddAuth(this IServiceCollection services, Identity identitySettings)
         {
-            var authenticationBuilder = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
+            var authenticationBuilder = services.AddAuthentication(op =>
+            {
+                op.DefaultAuthenticateScheme =
+                op.DefaultChallengeScheme =
+                op.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            });
+
             authenticationBuilder.AddJwtBearer($"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}", options =>
             {
+                options.SaveToken = identitySettings.SaveToken;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -73,7 +80,8 @@ namespace BaseProject.API.Extensions
 
             services.AddAuthorization(options =>
             {
-                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}"; options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
+                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}";
+                options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
 
                 options.AddPolicy("user_read", policy => policy.Requirements.Add(
                     new HasScopeRequirement(
@@ -90,9 +98,16 @@ namespace BaseProject.API.Extensions
         }
         public static void AddAuthLocal(this IServiceCollection services, Identity identitySettings)
         {
-            var authenticationBuilder = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
+            var authenticationBuilder = services.AddAuthentication(op =>
+            {
+                op.DefaultAuthenticateScheme =
+                op.DefaultChallengeScheme =
+                op.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            });
+
             authenticationBuilder.AddJwtBearer($"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}", options =>
             {
+                options.SaveToken = identitySettings.SaveToken;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -152,7 +167,8 @@ namespace BaseProject.API.Extensions
 
             services.AddAuthorization(options =>
             {
-                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}"; options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
+                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}"; 
+                options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
 
                 options.AddPolicy("user_read", policy => policy.Requirements.Add(
                     new HasScopeRequirement(

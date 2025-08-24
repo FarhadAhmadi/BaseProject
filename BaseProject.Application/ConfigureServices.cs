@@ -20,7 +20,7 @@ public static class ConfigureServices
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
-        services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandHandler.SignInCommandValidator>();
+        services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandValidator>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRRetryBehavior<,>));

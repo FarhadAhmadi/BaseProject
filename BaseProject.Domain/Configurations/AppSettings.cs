@@ -41,7 +41,9 @@ namespace BaseProject.Domain.Configurations
         public string ScopeBaseDomain { get; set; }
         [Required]
         public bool ValidateHttps { get; set; }
-        public int ExpiredTime { get; set; } = 10;
+        public int ExpiredTimeMinutes { get; set; } = 60;
+        public int RefreshTokenDays { get; set; } = 7;
+        public bool SaveToken { get; set; }
     }
     public class MailConfigurations
     {
@@ -61,11 +63,11 @@ namespace BaseProject.Domain.Configurations
     public class CloudinarySettings
     {
         [Required]
-        public string CloudName { get; set; } = string.Empty;
+        public string CloudName { get; set; }
         [Required]
-        public string ApiKey { get; set; } = string.Empty;
+        public string ApiKey { get; set; }
         [Required]
-        public string ApiSecret { get; set; } = string.Empty;
+        public string ApiSecret { get; set; }
     }
     public class FileStorageSettings
     {
