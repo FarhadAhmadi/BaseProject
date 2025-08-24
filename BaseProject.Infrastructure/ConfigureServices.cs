@@ -3,12 +3,15 @@ using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
 using BaseProject.Infrastructure.Common.Utilities;
+using BaseProject.Infrastructure.Extensions;
 using BaseProject.Infrastructure.Logging;
 using BaseProject.Infrastructure.Persistence;
 using BaseProject.Infrastructure.Persistence.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
 
 namespace BaseProject.Infrastructure;
 
@@ -44,20 +47,18 @@ public static class ConfigureServices
             });
         }
 
-        services.AddIdentity<ApplicationUser, RoleIdentity>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+        //Add Identity
+        services.AddCustomIdentity();
 
+
+        // Repositories & services
         services.AddScoped<IUserRepository, UserRepository>();
-        //services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddTransient<ApplicationDbContextInitializer>();
-
         services.AddScoped<SqlDapperContext>();
-
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<ICookieService, CookieService>();
 

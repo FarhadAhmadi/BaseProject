@@ -12,11 +12,11 @@ public class MapProfile : Profile
 {
     public MapProfile()
     {
-        CreateMap<User, UserSignInRequestDto>().ReverseMap();
-        CreateMap<User, SignInResponse>().ReverseMap();
-        CreateMap<User, UserSignUpRequestDto>().ReverseMap();
-        CreateMap<User, SignUpResponse>().ReverseMap();
-        CreateMap<User, ProfileResponse>().ReverseMap();
+        CreateMap<ApplicationUser, UserSignInRequestDto>().ReverseMap();
+        CreateMap<ApplicationUser, SignInResponse>().ReverseMap();
+        CreateMap<ApplicationUser, UserSignUpRequestDto>().ReverseMap();
+        CreateMap<ApplicationUser, SignUpResponse>().ReverseMap();
+        CreateMap<ApplicationUser, ProfileResponse>().ReverseMap();
 
         CreateMap(typeof(PaginatedList<>), typeof(PaginatedList<>)).ConvertUsing(typeof(PaginationConverter<,>));
     }

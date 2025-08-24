@@ -18,8 +18,8 @@ namespace BaseProject.Application.Services
         // Xóa media
         public async Task RemoveMediaAsync(string mediaId, CancellationToken cancellationToken)
         {
-            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
-                filter: x => x.MediaId == mediaId
+            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<UserMedia>(
+                filter: x => x.Id == mediaId
             );
 
             if (media == null)
@@ -42,7 +42,7 @@ namespace BaseProject.Application.Services
         // C?p nh?t media
         public async Task UpdateMediaAsync(string mediaId, MediaCreateRequestDto request, CancellationToken cancellationToken)
         {
-            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(filter: x => x.MediaId == mediaId);
+            var media = await _unitOfWork.Media.GetFirstOrDefaultAsync<UserMedia>(filter: x => x.Id == mediaId);
             if (media == null)
             {
                 _logger.LogWarning($"Cannot find media with id {mediaId}");

@@ -6,7 +6,7 @@ namespace BaseProject.Application.Common.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateToken(User user);
+        string GenerateToken(ApplicationUser user);
         ClaimsPrincipal ValidateToken(string token);
         Task<TokenResponseDto> GenerateToken(ApplicationUser user, string[] scopes, CancellationToken cancellationToken);
     }

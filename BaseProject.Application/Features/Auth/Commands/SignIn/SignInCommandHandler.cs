@@ -1,75 +1,91 @@
-﻿using AutoMapper;
-using BaseProject.Application.Common.Exceptions;
+﻿using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Extensions.PredefinedLogs;
 using BaseProject.Application.Common.Interfaces;
-using BaseProject.Application.Common.Utilities;
-using BaseProject.Domain.Constants;
+using BaseProject.Application.Features.Auth.Commands.SignIn;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
-namespace BaseProject.Application.Features.Auth.Commands.SignIn;
-
-public sealed class SignInCommandHandler
-    : IRequestHandler<SignInCommand, SignInResponse>
+public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignInResponse>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ICookieService _cookieService;
-    private readonly IMapper _mapper;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IAppLogger _appLogger;
 
-
     public SignInCommandHandler(
-        IUnitOfWork unitOfWork,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
+        IUnitOfWork unitOfWork,
         ICookieService cookieService,
-        IMapper mapper,
-        IHttpContextAccessor httpContextAccessor,
         IAppLogger appLogger)
     {
-        _unitOfWork = unitOfWork;
+        _userManager = userManager;
+        _signInManager = signInManager;
         _tokenService = tokenService;
+        _unitOfWork = unitOfWork;
         _cookieService = cookieService;
-        _mapper = mapper;
-        _httpContextAccessor = httpContextAccessor;
         _appLogger = appLogger;
     }
 
     public async Task<SignInResponse> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync<User>(
-            filter: x => x.UserName == request.UserName,
-            selector: x => new User
-            {
-                Id = x.Id,
-                UserName = x.UserName,
-                Email = x.Email,
-                Password = x.Password
-            }
-        );
-
-        var invalidMessage = "Invalid username or password.";
-
+        // 1. Log: Start login attempt
         _appLogger.LogLoginAttempt(request.UserName);
 
-        if (user == null || !StringHelper.VerifyPassword(request.Password, user.Password))
+        // 2. Try to find user (with roles and avatar for claims and profile completeness)
+        var user = await _userManager.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Include(u => u.Avatar)
+            .FirstOrDefaultAsync(u => u.UserName == request.UserName, cancellationToken);
+
+        if (user == null)
         {
-            _appLogger.LogLoginResult(user?.Id,false);
-            throw UserException.BadRequestException(invalidMessage);
+            // Log: User not found
+            _appLogger.LogLoginInvalidUserName(request.UserName);
+            throw AuthIdentityException.ThrowAccountDoesNotExist();
         }
 
-        _appLogger.LogLoginResult(user?.Id, true);
+        // 3. Check password with lockout enabled
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        if (!result.Succeeded)
+        {
+            // Log: Wrong password attempt
+            _appLogger.LogLoginInvalidPassword(user.Id);
+            throw AuthIdentityException.ThrowLoginUnsuccessful();
+        }
 
-        var token = _tokenService.GenerateToken(user);
-        _cookieService.Set(token);
+        // 4. Fetch roles and claims (scopes may be inside claims)
+        var roles = await _userManager.GetRolesAsync(user);
+        var claims = await _userManager.GetClaimsAsync(user);
+        var scopes = claims.FirstOrDefault(c => c.Type == "scope")?.Value.Split(' ') ?? Array.Empty<string>();
 
-        var response = _mapper.Map<SignInResponse>(user);
-        response.Token = token;
+        // 5. Generate JWT & Refresh Token
+        var tokenResponse = await _tokenService.GenerateToken(user, scopes, cancellationToken);
 
-        return response;
+        // 6. Optionally store JWT inside HttpOnly cookie (for browser-based login)
+        if (_cookieService != null)
+        {
+            _cookieService.Delete();
+            _cookieService.Set(tokenResponse.Token);
+        }
 
+        // 7. Log: Successful login
+        _appLogger.LogLoginResult(user.Id, success: true);
+
+        // 8. Return response DTO
+        return new SignInResponse
+        {
+            UserId = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            Token = tokenResponse.Token,
+        };
     }
 }

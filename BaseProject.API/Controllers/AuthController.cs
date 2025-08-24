@@ -53,8 +53,10 @@ namespace BaseProject.API.Controllers
         {
             var result = await _mediator.Send(new SignUpCommand
             {
+                FullName = request.FullName,
                 UserName = request.UserName,
                 Password = request.Password,
+                RePassword = request.RePassword,
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber
             }, token);
@@ -83,9 +85,9 @@ namespace BaseProject.API.Controllers
         [HttpPost("refresh")]
         [SwaggerResponse(StatusCodes.Status200OK, "Token refreshed successfully.", typeof(ResponseDto<string>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Refresh token is invalid or expired.")]
-        public async Task<IActionResult> RefreshToken(CancellationToken token)
+        public async Task<IActionResult> RefreshToken([FromBody]string token ,CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(new RefreshTokenCommand(), token);
+            var response = await _mediator.Send(new RefreshTokenCommand() { Token = token}, cancellationToken);
 
             return response == null || string.IsNullOrEmpty(response.AccessToken)
                 ? Fail<string>("Refresh token is invalid or expired", StatusCodes.Status401Unauthorized)

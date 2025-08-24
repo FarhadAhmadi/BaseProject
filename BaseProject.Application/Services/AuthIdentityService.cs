@@ -82,7 +82,7 @@ namespace BaseProject.Application.Services
             {
                 Email = request.Email,
                 UserName = request.UserName,
-                Name = request.Name
+                FullName = request.Name
             };
             var result = await _userManager.CreateAsync(user, request.Password);
 
@@ -142,7 +142,7 @@ namespace BaseProject.Application.Services
                             Id = x.Id,
                             Email = x.Email,
                             UserName = x.UserName,
-                            FullName = x.Name,
+                            FullName = x.FullName,
                             Roles = x.UserRoles.Select(ur => ur.Role.Name).ToList(),
                             Avatar = x.Avatar.PathMedia ?? " "
                         })
@@ -152,7 +152,7 @@ namespace BaseProject.Application.Services
             return users;
         }
 
-        public async Task<ForgotPassword> SendPasswordResetCode(SendPasswordResetCodeRequestDto request, CancellationToken cancellationToken)
+        public async Task<UserPasswordReset> SendPasswordResetCode(SendPasswordResetCodeRequestDto request, CancellationToken cancellationToken)
         {
             //Get identity user details user manager
             var user = await _userManager.FindByEmailAsync(request.Email)
@@ -164,7 +164,7 @@ namespace BaseProject.Application.Services
             //Generate OTP
             int otp = NumberHelper.GenerateRandom(100000, 999999);
 
-            var resetPassword = new ForgotPassword()
+            var resetPassword = new UserPasswordReset()
             {
                 Email = request.Email,
                 OTP = otp.ToString(),
@@ -193,7 +193,7 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             //Getting token from otp
-            var resetPasswordDetails = await _unitOfWork.ForgotPasswords.GetFirstOrDefaultAsync<ForgotPassword>(
+            var resetPasswordDetails = await _unitOfWork.ForgotPasswords.GetFirstOrDefaultAsync<UserPasswordReset>(
                 filter: x => x.OTP == request.OTP && x.UserId == user.Id.ToString(),
                 orderBy: x => x.DateTime,
                 ascending: false

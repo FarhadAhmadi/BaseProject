@@ -31,7 +31,7 @@ namespace BaseProject.Application.Services
                 Id = x.Id,
                 Email = x.Email,
                 UserName = x.UserName,
-                FullName = x.Name,
+                FullName = x.FullName,
                 Roles = x.UserRoles.Select(ur => ur.Role.Name).ToList(),
                 Avatar = x.Avatar != null ? x.Avatar.PathMedia : null
             }).ToList();
@@ -46,13 +46,13 @@ namespace BaseProject.Application.Services
                 ?? throw AuthIdentityException.ThrowUserNotExist();
 
             user.Email = request.Email ?? user.Email;
-            user.Name = request.Name ?? user.Name;
+            user.FullName = request.Name ?? user.FullName;
 
             //Luu Avatar vào Host
             if (request.MediaFile != null)
             {
-                var thumb = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
-                    filter: x => x.MediaId == user.AvatarId
+                var thumb = await _unitOfWork.Media.GetFirstOrDefaultAsync<UserMedia>(
+                    filter: x => x.Id == user.AvatarId
                 );
 
                 //C?p nh?t Avatar
@@ -82,8 +82,8 @@ namespace BaseProject.Application.Services
             var user = await _userManager.FindByIdAsync(userId)
                 ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
 
-            var avatar = await _unitOfWork.Media.GetFirstOrDefaultAsync<Media>(
-                filter: x => x.MediaId == user.AvatarId
+            var avatar = await _unitOfWork.Media.GetFirstOrDefaultAsync<UserMedia>(
+                filter: x => x.Id == user.AvatarId
             );
 
             if (avatar != null)

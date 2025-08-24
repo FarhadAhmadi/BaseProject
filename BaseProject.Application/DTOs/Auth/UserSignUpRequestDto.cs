@@ -5,6 +5,7 @@ namespace BaseProject.Application.DTOs.User;
 
 public class UserSignUpRequestDto
 {
+    public string FullName { get; set; }
     public string UserName { get; set; }
 
     [DataType(DataType.Password)]

@@ -16,18 +16,17 @@ namespace BaseProject.Infrastructure.Persistence
     {
         public static void Seed(this ModelBuilder modelBuilder)
         {
-
             var roleId = new string("A3314BE5-4C77-4FB6-82AD-302014682A73");
 
             var adminId = new string("69DB714F-9576-45BA-B5B7-F00649BE01DE");
 
-            modelBuilder.Entity<RoleIdentity>().HasData(new RoleIdentity
+            modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
             {
                 Id = roleId,
                 Name = Role.Admin.ToString(),
                 NormalizedName = Role.Admin.ToString(),
             });
-            modelBuilder.Entity<RoleIdentity>().HasData(new RoleIdentity
+            modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
             {
                 Id = new string("B4314BE5-4C77-4FB6-82AD-302014682B13"),
                 Name = Role.User.ToString(),
@@ -44,10 +43,10 @@ namespace BaseProject.Infrastructure.Persistence
                 EmailConfirmed = true,
                 PasswordHash = "P@ssw0rd".HashPassword(),
                 SecurityStamp = string.Empty,
-                Name = "Admin 1",
+                FullName = "Admin 1",
             });
 
-            modelBuilder.Entity<UserRoles>().HasData(new UserRoles
+            modelBuilder.Entity<ApplicationUserRole>().HasData(new ApplicationUserRole
             {
                 RoleId = roleId,
                 UserId = adminId

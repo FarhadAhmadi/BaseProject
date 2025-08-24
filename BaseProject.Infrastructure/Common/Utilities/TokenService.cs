@@ -25,7 +25,7 @@ namespace BaseProject.Infrastructure.Common.Utilities
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-        public string GenerateToken(User user)
+        public string GenerateToken(ApplicationUser user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Identity.Key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -33,7 +33,7 @@ namespace BaseProject.Infrastructure.Common.Utilities
             {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim(ClaimTypes.Role, user.UserRoles.ToString()),
         };
 
             var token = new JwtSecurityToken(
@@ -74,7 +74,7 @@ namespace BaseProject.Infrastructure.Common.Utilities
             var claims = new[]
             {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.GivenName, user.Name),
+            new Claim(ClaimTypes.GivenName, user.FullName),
             new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Uri, user?.Avatar?.PathMedia ?? "default.png"),
@@ -100,14 +100,14 @@ namespace BaseProject.Infrastructure.Common.Utilities
             result.Expires = expires;
             result.Token = tokenResult;
 
-            var refreshToken = new RefreshToken
+            var refreshToken = new UserRefreshToken
             {
                 Token = tokenResult,
                 UserId = user.Id,
                 Expires = expires,
                 Created = DateTime.UtcNow
             };
-            var checkToken = await _unitOfWork.RefreshTokens.GetFirstOrDefaultAsync<RefreshToken>(
+            var checkToken = await _unitOfWork.RefreshTokens.GetFirstOrDefaultAsync<UserRefreshToken>(
                 filter: r => r.UserId == user.Id
             );
 
@@ -123,9 +123,8 @@ namespace BaseProject.Infrastructure.Common.Utilities
                 checkToken.Token = tokenResult;
                 checkToken.Expires = expires;
                 checkToken.Created = DateTime.UtcNow;
-                await _unitOfWork.ExecuteInTransactionAsync(
-                    () => _unitOfWork.RefreshTokens.Update(refreshToken), cancellationToken);
 
+                await _unitOfWork.ExecuteInTransactionAsync(() => { }, cancellationToken);
             }
             //if refresh token is exist and expired, then delete it and add new one
             else

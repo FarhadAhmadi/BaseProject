@@ -2,6 +2,8 @@
 {
     public static class AuthIdentityErrorMessage
     {
+        public const string PasswordMismatchMessage = "Password mismatch";
+        public const string InvalidCredentialsMessage = "Invalid username or password.";
         public const string TokenNotExistMessage = "The specified token does not exist.";
         public const string TokenNotActiveMessage = "The specified token is not active.";
         public const string AccountDoesNotExistMessage = "The account does not exist.";

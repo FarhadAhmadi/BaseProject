@@ -4,5 +4,5 @@ using System.Linq;
 
 namespace BaseProject.Infrastructure.Persistence.Repositories
 {
-    public class ForgotPasswordRepository(ApplicationDbContext context, SqlDapperContext dapperContext) : GenericRepository<ForgotPassword>(context, dapperContext), IForgotPasswordRepository { }
+    public class ForgotPasswordRepository(ApplicationDbContext context, SqlDapperContext dapperContext) : GenericRepository<UserPasswordReset>(context, dapperContext), IForgotPasswordRepository { }
 }

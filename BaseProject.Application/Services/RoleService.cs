@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BaseProject.Application.Services
 {
-    public class RoleService(RoleManager<RoleIdentity> roleManager) : IRoleService
+    public class RoleService(RoleManager<ApplicationRole> roleManager) : IRoleService
     {
-        private readonly RoleManager<RoleIdentity> _roleManager = roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
 
         public async Task<List<RoleResposneDto>> GetAll()
         {

@@ -12,6 +12,9 @@ namespace BaseProject.Application.Common.Exceptions
     [ExcludeFromCodeCoverage]
     public static class AuthIdentityException
     {
+        public static FriendlyException ThrowPasswordMismatch()
+            => throw new FriendlyException(ApiErrorCode.BadRequest,AuthIdentityErrorMessage.PasswordMismatchMessage,"Password and RePassword do not match.");
+
         public static FriendlyException  ThrowTokenNotExist()
             => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.TokenNotExistMessage, AuthIdentityErrorMessage.TokenNotExistMessage);
 
@@ -19,10 +22,10 @@ namespace BaseProject.Application.Common.Exceptions
             => throw new FriendlyException (ApiErrorCode.BadRequest, AuthIdentityErrorMessage.TokenNotActiveMessage, AuthIdentityErrorMessage.TokenNotActiveMessage);
 
         public static FriendlyException  ThrowAccountDoesNotExist()
-            => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.AccountDoesNotExistMessage, AuthIdentityErrorMessage.AccountDoesNotExistMessage);
+            => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.InvalidCredentialsMessage, AuthIdentityErrorMessage.InvalidCredentialsMessage);
 
         public static FriendlyException  ThrowLoginUnsuccessful()
-            => throw new FriendlyException (ApiErrorCode.BadRequest, AuthIdentityErrorMessage.LoginUnsuccessfulMessage, AuthIdentityErrorMessage.LoginUnsuccessfulMessage);
+            => throw new FriendlyException (ApiErrorCode.BadRequest, AuthIdentityErrorMessage.InvalidCredentialsMessage, AuthIdentityErrorMessage.InvalidCredentialsMessage);
 
         public static FriendlyException  ThrowUsernameAvailable()
             => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.UsernameAvailableMessage, AuthIdentityErrorMessage.UsernameAvailableMessage);

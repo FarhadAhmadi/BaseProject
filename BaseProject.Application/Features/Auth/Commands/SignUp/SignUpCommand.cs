@@ -7,6 +7,7 @@ namespace BaseProject.Application.Features.Auth.Commands.SignUp;
 
 public sealed class SignUpCommand : IRequest<SignUpResponse>
 {
+    public string FullName { get; set; }
     public string UserName { get; init; }
     public string Password { get; init; }
     public string RePassword { get; init; }
