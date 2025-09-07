@@ -2,6 +2,7 @@ using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

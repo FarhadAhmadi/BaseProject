@@ -1,4 +1,5 @@
-﻿using Swashbuckle.AspNetCore.Annotations;
+﻿using BaseProject.Domain.Entities.Base;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BaseProject.Domain.Entities
 {

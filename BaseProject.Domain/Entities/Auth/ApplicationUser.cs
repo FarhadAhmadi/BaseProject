@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 
-namespace BaseProject.Domain.Entities
+namespace BaseProject.Domain.Entities.Auth
 {
     /// <summary>
     /// Represents an application user in the system.

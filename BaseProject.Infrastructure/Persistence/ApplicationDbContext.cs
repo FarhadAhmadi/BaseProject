@@ -1,4 +1,6 @@
 ﻿using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
+using BaseProject.Domain.Entities.Base;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -19,6 +21,7 @@ namespace BaseProject.Infrastructure.Persistence
         }
 
         // DbSets
+        public DbSet<GenericAttribute> GenericAttributes { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<UserPasswordReset> UserPasswordResets { get; set; }

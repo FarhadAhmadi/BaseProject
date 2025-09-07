@@ -4,7 +4,7 @@ using BaseProject.Application.Common.Extensions.PredefinedLogs;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Utilities;
 using BaseProject.Domain.Configurations;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Enums;
 using BaseProject.Domain.Interfaces;
 using MediatR;

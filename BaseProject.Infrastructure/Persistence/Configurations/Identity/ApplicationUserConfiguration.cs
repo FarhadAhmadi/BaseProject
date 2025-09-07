@@ -1,4 +1,4 @@
-﻿using BaseProject.Domain.Entities;
+﻿using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

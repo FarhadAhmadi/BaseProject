@@ -1,18 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Swashbuckle.AspNetCore.Annotations;
 
-namespace BaseProject.Domain.Entities
+namespace BaseProject.Domain.Entities.Auth
 {
     /// <summary>
-    /// Represents a mapping between user and role.
+    /// Represents a claim associated with a user.
     /// </summary>
-    public class ApplicationUserRole : IdentityUserRole<string>
+    public class ApplicationUserClaim : IdentityUserClaim<string>
     {
-        [SwaggerSchema("The user associated with this role mapping.")]
         public virtual ApplicationUser User { get; set; }
-
-        [SwaggerSchema("The role associated with this user mapping.")]
-        public virtual ApplicationRole Role { get; set; }
 
         #region Audit Properties
         public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.Now;

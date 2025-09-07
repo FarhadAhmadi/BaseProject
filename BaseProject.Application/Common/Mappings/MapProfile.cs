@@ -3,7 +3,7 @@ using BaseProject.Application.DTOs.User;
 using BaseProject.Application.Features.Auth.Commands.SignIn;
 using BaseProject.Application.Features.Auth.Commands.SignUp;
 using BaseProject.Application.Features.Auth.Queries.GetProfile;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Shared.DTOs.Common;
 
 namespace BaseProject.Application.Common.Mappings;

@@ -2,7 +2,7 @@
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BaseProject.Domain.Entities
+namespace BaseProject.Domain.Entities.Auth
 {
     /// <summary>
     /// Represents an application role in the system.

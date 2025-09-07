@@ -1,5 +1,5 @@
 ﻿using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using System.Security.Claims;
 
 namespace BaseProject.Application.Common.Interfaces

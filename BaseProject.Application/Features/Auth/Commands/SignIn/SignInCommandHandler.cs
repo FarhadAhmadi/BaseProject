@@ -2,7 +2,7 @@
 using BaseProject.Application.Common.Extensions.PredefinedLogs;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Features.Auth.Commands.SignIn;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

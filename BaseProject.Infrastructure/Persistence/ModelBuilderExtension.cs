@@ -1,5 +1,5 @@
 ﻿using BaseProject.Application.Common.Utilities;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
