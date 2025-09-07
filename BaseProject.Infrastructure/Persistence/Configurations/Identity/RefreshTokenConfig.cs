@@ -10,7 +10,7 @@ public class RefreshTokenConfig : IEntityTypeConfiguration<UserRefreshToken>
     {
         builder.ToTable("RefreshTokens", "Identity");
 
-        builder.HasKey(rt => rt.Id);
+        //builder.HasKey(rt => rt.Id);
 
         builder.Property(rt => rt.Token)
                .HasColumnType("nvarchar(max)")

@@ -9,6 +9,9 @@ namespace BaseProject.Domain.Entities.Auth
     /// </summary>
     public class ApplicationRole : IdentityRole<string>
     {
+        [SwaggerSchema("Active User.")]
+        public bool Active { get; set; }
+
         [SwaggerSchema("Users assigned to this role.")]
         public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = new List<ApplicationUserRole>();
 

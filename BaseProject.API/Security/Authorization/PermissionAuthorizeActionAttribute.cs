@@ -1,18 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
+using BaseProject.Application.Common.Interfaces;
+using BaseProject.Shared.DTOs.Common;
+using BaseProject.Shared.Constants;
 
 namespace BaseProject.API.Security.Authorization
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class PermissionAuthorizeActionAttribute : Attribute, IAsyncAuthorizationFilter
+    public class PermissionAuthorizeActionAttribute(string actionName) : Attribute, IAsyncAuthorizationFilter
     {
-        public PermissionAuthorizeActionAttribute(string actionName)
-        {
-            PermissionAction = actionName;
-        }
-
         // Get or set the permision property by manipulating
-        public string PermissionAction { get; set; }
+        public string PermissionAction { get; set; } = actionName;
 
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
@@ -46,44 +44,9 @@ namespace BaseProject.API.Security.Authorization
                     context.Result = new RedirectToActionResult("AccessDenied", "Home", new { pageUrl = context.HttpContext.Request.Path });
                 else
                 {
-                    context.Result = new JsonResult(new DataSourceResult { Errors = $"Access denied to the resource {context.HttpContext.Request.Path}" });
+                    context.Result = new JsonResult(new ErrorDto { Message = $"Access denied to the resource {context.HttpContext.Request.Path}" , Code = "401" });
                 }
             }
-            return;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Class)]
-    public class PermissionAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
-    {
-        public PermissionAuthorizeAttribute(string permission)
-        {
-            Permission = permission;
-        }
-
-        // Get or set the permision property by manipulating
-        public string Permission { get; set; }
-
-        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
-        {
-            //ignore filter (the action available even when navigation is not allowed)
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            if (string.IsNullOrEmpty(Permission))
-                return;
-
-            var permissionService = context.HttpContext.RequestServices.GetRequiredService<IPermissionService>();
-            //check whether current customer has access to a public store
-            if (await permissionService.Authorize(Permission))
-                return;
-
-            //authorize permission of access to the admin area
-            if (!await permissionService.Authorize(StandardPermissionProvider.AccessAdminPanel))
-                context.Result = new RedirectToRouteResult("AdminLogin", new RouteValueDictionary());
-            else
-                context.Result = new RedirectToActionResult("AccessDenied", "Home", new { pageUrl = context.HttpContext.Request.Path });
-
             return;
         }
     }

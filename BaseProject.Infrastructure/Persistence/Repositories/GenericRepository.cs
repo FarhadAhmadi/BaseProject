@@ -243,6 +243,10 @@ namespace BaseProject.Infrastructure.Persistence.Repositories
 
         #endregion
 
+        public IQueryable<T> Table => _dbSet;
+
+        public IQueryable<T> TableNoTracking => _dbSet.AsNoTracking();
+
         #endregion
     }
 }

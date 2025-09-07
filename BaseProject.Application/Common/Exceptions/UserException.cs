@@ -18,5 +18,8 @@ namespace BaseProject.Application.Common.Exceptions
 
         public static FriendlyException  BadRequestException(string errorMessage)
             => new(ApiErrorCode.BadRequest, errorMessage, errorMessage);
+
+        public static FriendlyException  EmailFormatException(string errorMessage)
+            => new(ApiErrorCode.BadRequest, errorMessage, errorMessage);
     }
 }

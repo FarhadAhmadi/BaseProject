@@ -1,5 +1,8 @@
 ﻿using BaseProject.Application.Common.Interfaces;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Entities.Security;
+using BaseProject.Domain.Interfaces;
+using BaseProject.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace BaseProject.Application.Services
@@ -7,39 +10,12 @@ namespace BaseProject.Application.Services
     /// <summary>
     /// Permission service
     /// </summary>
-    public partial class PermissionService : IPermissionService
+    public partial class PermissionService(
+        ICurrentUser currentUser,
+        ICacheBase cacheManager,
+        IUnitOfWork unitOfWork
+        ) : IPermissionService
     {
-        #region Fields
-
-        private readonly IRepository<PermissionRecord> _permissionRecordRepository;
-        private readonly IRepository<PermissionAction> _permissionActionRepository;
-        private readonly IWorkContext _workContext;
-        private readonly ICacheBase _cacheBase;
-
-        #endregion
-
-        #region Ctor
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="permissionRecordRepository">Permission repository</param>
-        /// <param name="permissionActionRepository">Permission action repository</param>
-        /// <param name="workContext">Work context</param>
-        /// <param name="cacheManager">Cache manager</param>
-        public PermissionService(
-            IRepository<PermissionRecord> permissionRecordRepository,
-            IRepository<PermissionAction> permissionActionRepository,
-            IWorkContext workContext,
-            ICacheBase cacheManager)
-        {
-            _permissionRecordRepository = permissionRecordRepository;
-            _permissionActionRepository = permissionActionRepository;
-            _workContext = workContext;
-            _cacheBase = cacheManager;
-        }
-
-        #endregion
 
         #region Utilities
 
@@ -49,16 +25,16 @@ namespace BaseProject.Application.Services
         /// <param name="permissionRecordSystemName">Permission record system name</param>
         /// <param name="customerRole">Customer role</param>
         /// <returns>true - authorized; otherwise, false</returns>
-        protected virtual async Task<bool> Authorize(string permissionRecordSystemName, CustomerRole customerRole)
+        protected virtual async Task<bool> Authorize(string permissionRecordSystemName, ApplicationRole role)
         {
             if (string.IsNullOrEmpty(permissionRecordSystemName))
                 return false;
 
-            string key = string.Format(CacheKey.PERMISSIONS_ALLOWED_KEY, customerRole.Id, permissionRecordSystemName);
-            return await _cacheBase.GetAsync(key, async () =>
+            string key = string.Format(CacheKey.PERMISSIONS_ALLOWED_KEY, role.Id, permissionRecordSystemName);
+            return await cacheManager.GetAsync(key, async () =>
             {
-                var permissionRecord = await _permissionRecordRepository.Table.FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName);
-                return permissionRecord?.CustomerRoles.Contains(customerRole.Id) ?? false;
+                var permissionRecord = await unitOfWork.PermissionRecordRepository.Table.FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName);
+                return permissionRecord?.UserRoles.Contains(role.Id) ?? false;
             });
         }
 
@@ -75,9 +51,10 @@ namespace BaseProject.Application.Services
             if (permission == null)
                 throw new ArgumentNullException("permission");
 
-            await _permissionRecordRepository.DeleteAsync(permission);
+            unitOfWork.PermissionRecordRepository.Delete(permission);
+            await unitOfWork.SaveChangesAsync();
 
-            await _cacheBase.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
+            await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
         /// <summary>
@@ -87,7 +64,7 @@ namespace BaseProject.Application.Services
         /// <returns>Permission</returns>
         public virtual Task<PermissionRecord> GetPermissionRecordById(string permissionId)
         {
-            return _permissionRecordRepository.GetByIdAsync(permissionId);
+            return unitOfWork.PermissionRecordRepository.GetByIdAsync(permissionId);
         }
 
         /// <summary>
@@ -100,7 +77,7 @@ namespace BaseProject.Application.Services
             if (String.IsNullOrWhiteSpace(systemName))
                 return await Task.FromResult<PermissionRecord>(null);
 
-            var query = from pr in _permissionRecordRepository.Table
+            var query = from pr in unitOfWork.PermissionRecordRepository.Table
                         where pr.SystemName == systemName
                         orderby pr.Id
                         select pr;
@@ -114,7 +91,7 @@ namespace BaseProject.Application.Services
         /// <returns>Permissions</returns>
         public virtual async Task<IList<PermissionRecord>> GetAllPermissionRecords()
         {
-            var query = from pr in _permissionRecordRepository.Table
+            var query = from pr in unitOfWork.PermissionRecordRepository.Table
                         orderby pr.Name
                         select pr;
             return await query.ToListAsync();
@@ -129,9 +106,9 @@ namespace BaseProject.Application.Services
             if (permission == null)
                 throw new ArgumentNullException("permission");
 
-            await _permissionRecordRepository.InsertAsync(permission);
+            await unitOfWork.PermissionRecordRepository.AddAsync(permission);
 
-            await _cacheBase.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
+            await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
         /// <summary>
@@ -143,9 +120,10 @@ namespace BaseProject.Application.Services
             if (permission == null)
                 throw new ArgumentNullException("permission");
 
-            await _permissionRecordRepository.UpdateAsync(permission);
+            unitOfWork.PermissionRecordRepository.Update(permission);
+            await unitOfWork.SaveChangesAsync();
 
-            await _cacheBase.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
+            await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
         /// <summary>
@@ -155,7 +133,7 @@ namespace BaseProject.Application.Services
         /// <returns>true - authorized; otherwise, false</returns>
         public virtual async Task<bool> Authorize(PermissionRecord permission)
         {
-            return await Authorize(permission, _workContext.CurrentCustomer);
+            return await Authorize(permission, await currentUser.GetCurrentUser());
         }
 
         /// <summary>
@@ -164,15 +142,15 @@ namespace BaseProject.Application.Services
         /// <param name="permission">Permission record</param>
         /// <param name="customer">Customer</param>
         /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(PermissionRecord permission, Customer customer)
+        public virtual async Task<bool> Authorize(PermissionRecord permission, ApplicationUser user)
         {
             if (permission == null)
                 return false;
 
-            if (customer == null)
+            if (user == null)
                 return false;
 
-            return await Authorize(permission.SystemName, customer);
+            return await Authorize(permission.SystemName, user);
         }
 
         /// <summary>
@@ -182,7 +160,7 @@ namespace BaseProject.Application.Services
         /// <returns>true - authorized; otherwise, false</returns>
         public virtual async Task<bool> Authorize(string permissionRecordSystemName)
         {
-            return await Authorize(permissionRecordSystemName, _workContext.CurrentCustomer);
+            return await Authorize(permissionRecordSystemName, await currentUser.GetCurrentUser());
         }
 
         /// <summary>
@@ -191,13 +169,14 @@ namespace BaseProject.Application.Services
         /// <param name="permissionRecordSystemName">Permission record system name</param>
         /// <param name="customer">Customer</param>
         /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(string permissionRecordSystemName, Customer customer)
+        public virtual async Task<bool> Authorize(string permissionRecordSystemName, ApplicationUser user)
         {
             if (String.IsNullOrEmpty(permissionRecordSystemName))
                 return false;
 
-            var customerRoles = customer.CustomerRoles.Where(cr => cr.Active);
-            foreach (var role in customerRoles)
+            var roles = await unitOfWork.Users.GetUserRolesAsync(user.Id);
+
+            foreach (var role in roles)
                 if (await Authorize(permissionRecordSystemName, role))
                     //yes, we have such permission
                     return true;
@@ -212,10 +191,10 @@ namespace BaseProject.Application.Services
         /// <param name="systemName">Permission system name</param>
         /// <param name="customeroleId">Customer role ident</param>
         /// <returns>Permission action</returns>
-        public virtual async Task<IList<PermissionAction>> GetPermissionActions(string systemName, string customeroleId)
+        public virtual async Task<IList<PermissionAction>> GetPermissionActions(string systemName, string roleId)
         {
-            return await _permissionActionRepository.Table
-                    .Where(x => x.SystemName == systemName && x.CustomerRoleId == customeroleId).ToListAsync();
+            return await unitOfWork.PermissionActionRepository.Table
+                    .Where(x => x.SystemName == systemName && x.UserRoleId == roleId).ToListAsync();
         }
 
         /// <summary>
@@ -228,9 +207,10 @@ namespace BaseProject.Application.Services
                 throw new ArgumentNullException("permissionAction");
 
             //insert
-            await _permissionActionRepository.InsertAsync(permissionAction);
+            await unitOfWork.PermissionActionRepository.AddAsync(permissionAction);
+            await unitOfWork.SaveChangesAsync();
             //clear cache
-            await _cacheBase.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
+            await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
         /// <summary>
@@ -243,9 +223,10 @@ namespace BaseProject.Application.Services
                 throw new ArgumentNullException("permissionAction");
 
             //delete
-            await _permissionActionRepository.DeleteAsync(permissionAction);
+            unitOfWork.PermissionActionRepository.Delete(permissionAction);
+            await unitOfWork.SaveChangesAsync();
             //clear cache
-            await _cacheBase.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
+            await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
         /// <summary>
@@ -262,17 +243,19 @@ namespace BaseProject.Application.Services
             if (!await Authorize(permissionRecordSystemName))
                 return false;
 
-            var customerRoles = _workContext.CurrentCustomer.CustomerRoles.Where(cr => cr.Active);
-            foreach (var role in customerRoles)
+            var userId = currentUser.GetCurrentUserId();
+
+            var customerRoles = await unitOfWork.Users.GetUserRolesAsync(userId);
+            foreach (var role in customerRoles.Where(x => x.Active))
             {
                 if (!await Authorize(permissionRecordSystemName, role))
                     continue;
 
                 var key = string.Format(CacheKey.PERMISSIONS_ALLOWED_ACTION_KEY, role.Id, permissionRecordSystemName, permissionActionName);
-                var permissionAction = await _cacheBase.GetAsync(key, async () =>
+                var permissionAction = await cacheManager.GetAsync(key, async () =>
                 {
-                    return await _permissionActionRepository.Table
-                        .FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName && x.CustomerRoleId == role.Id && x.Action == permissionActionName);
+                    return await unitOfWork.PermissionActionRepository.Table
+                        .FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName && x.UserRoleId == role.Id && x.Action == permissionActionName);
                 });
                 if (permissionAction != null)
                     return false;

@@ -28,8 +28,12 @@ public static class ConfigureServices
         {
             services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
-                var interceptor = sp.GetRequiredService<AuditInterceptor>();
                 options.UseInMemoryDatabase("CleanArchitecture");
+
+                // Add interceptors safely
+                var provider = sp.GetService<AuditInterceptor>();
+                if (provider != null)
+                    options.AddInterceptors(provider);
             });
         }
         else

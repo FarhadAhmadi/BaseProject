@@ -41,8 +41,8 @@ namespace BaseProject.Infrastructure.Persistence.Configurations
             // -----------------------------
             // Primary key configuration
             // -----------------------------
-            builder.HasKey(a => a.Id)
-                   .HasName("PK_GenericAttributes"); // Explicit PK name for clarity
+            //builder.HasKey(a => a.Id)
+            //       .HasName("PK_GenericAttributes"); // Explicit PK name for clarity
 
             // -----------------------------
             // Property configurations
