@@ -263,7 +263,6 @@ namespace BaseProject.Application.Services
 
             return true;
         }
-
         #endregion
     }
 }
