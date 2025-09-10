@@ -32,6 +32,7 @@ namespace BaseProject.Infrastructure.Persistence
         public DbSet<PermissionAction> PermissionActions { get; set; }
         public DbSet<RolePermissionAction> RolePermissionActions { get; set; }
         public DbSet<UserPermissionAction> UserPermissionActions { get; set; }
+
         public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
