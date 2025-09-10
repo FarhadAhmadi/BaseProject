@@ -1,10 +1,12 @@
-﻿namespace BaseProject.Domain.Entities.Security
+﻿using BaseProject.Domain.Entities.Base;
+
+namespace BaseProject.Domain.Entities.Authorization
 {
     /// <summary>
     /// Represents the default set of permissions for a specific user role.
     /// Useful for seeding initial permissions or defining role templates.
     /// </summary>
-    public class DefaultPermissionRecord
+    public class DefaultPermissionRecord : BaseEntity
     {
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultPermissionRecord"/>.

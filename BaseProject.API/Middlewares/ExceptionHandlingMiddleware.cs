@@ -52,9 +52,9 @@ namespace BaseProject.API.Middlewares
             }
 
             int statusCode = StatusCodes.Status500InternalServerError;
-            var response = ResponseDto<object>.FailResponse("An unexpected error occurred.");
+            ResponseDto<object> response = ResponseDto<object>.FailResponse("An unexpected error occurred.");
 
-            var traceId = Activity.Current?.Id ?? "N/A";
+            string traceId = Activity.Current?.Id ?? "N/A";
 
             if (exception is FriendlyException friendlyEx)
             {
@@ -75,7 +75,7 @@ namespace BaseProject.API.Middlewares
 
                 try
                 {
-                    var json = _env.IsDevelopment()
+                    string json = _env.IsDevelopment()
                         ? JsonSerializer.Serialize(new
                         {
                             response.Success,

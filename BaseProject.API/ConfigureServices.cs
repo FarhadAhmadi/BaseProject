@@ -1,15 +1,12 @@
 using BaseProject.API.Extensions;
-using BaseProject.API.Middlewares;
 using BaseProject.Domain.Authorization;
 using BaseProject.Domain.Configurations;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Serilog;
 
 namespace BaseProject.API;
 

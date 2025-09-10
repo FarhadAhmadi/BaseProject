@@ -1,4 +1,4 @@
-﻿namespace BaseProject.Shared.Constants
+﻿namespace BaseProject.Domain.Constants.Authorization
 {
     public static class PermissionSystemName
     {

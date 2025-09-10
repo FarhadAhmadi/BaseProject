@@ -2,6 +2,7 @@
 using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
+using BaseProject.Infrastructure.Caching;
 using BaseProject.Infrastructure.Common.Utilities;
 using BaseProject.Infrastructure.Extensions;
 using BaseProject.Infrastructure.Logging;
@@ -65,6 +66,7 @@ public static class ConfigureServices
         services.AddScoped<SqlDapperContext>();
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<ICookieService, CookieService>();
+        services.AddScoped<ICacheBase, MemoryCacheBase>();
 
         return services;
     }

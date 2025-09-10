@@ -1,7 +1,7 @@
 using BaseProject.Application.Common.Exceptions;
 using BaseProject.Application.Common.Validation;
 using BaseProject.Application.Features.Auth.Commands.SignUp;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 

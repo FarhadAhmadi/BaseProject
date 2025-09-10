@@ -20,18 +20,5 @@ namespace BaseProject.Domain.Entities.Base
         /// </summary>
         [SwaggerSchema("Value of the attribute associated with the key.")]
         public string Value { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Foreign key referencing the parent <see cref="BaseEntity"/> this attribute belongs to.
-        /// </summary>
-        [SwaggerSchema("Foreign key linking this attribute to its parent BaseEntity.")]
-        public string BaseEntityId { get; set; }
-
-        /// <summary>
-        /// Navigation property to the parent <see cref="BaseEntity"/>.
-        /// Enables EF Core relationship mapping and lazy/eager loading.
-        /// </summary>
-        [SwaggerSchema("Reference to the parent BaseEntity.")]
-        public BaseEntity BaseEntity { get; set; } = null!;
     }
 }

@@ -12,9 +12,11 @@ namespace BaseProject.Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<ApplicationRole>> GetUserRolesAsync(string userId)
         {
             return await (from ur in _context.UserRoles
-                               join r in _context.Roles on ur.RoleId equals r.Id
-                               where ur.UserId == userId
-                               select r).ToListAsync();
+                    join r in _context.Roles on ur.RoleId equals r.Id
+                    where ur.UserId == userId
+                    select r)
+                    .AsNoTracking()
+                    .ToListAsync();
         }
     }
 }

@@ -62,7 +62,7 @@ public sealed class SignUpCommandHandler
         //}
 
         // 4. Create new user
-        var user = new ApplicationUser()
+        ApplicationUser user = new()
         {
             Id = Guid.NewGuid().ToString(),
             FullName = request.FullName,
@@ -71,11 +71,11 @@ public sealed class SignUpCommandHandler
             PhoneNumber = !string.IsNullOrEmpty(request.PhoneNumber) ? request.PhoneNumber : null
         };
 
-        var result = await _userManager.CreateAsync(user, request.Password);
+        IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            string errors = string.Join(", ", result.Errors.Select(e => e.Description));
             _appLogger.Warning("Sign-up failed | User creation error | UserName: {UserName} | Errors: {Errors}",
                 request.UserName, errors);
             throw AuthIdentityException.ThrowRegisterUnsuccessful(errors);
@@ -87,12 +87,12 @@ public sealed class SignUpCommandHandler
         // 6. Assign default scopes
         string readScope = _appSettings.Identity.ScopeBaseDomain + "/read";
         string writeScope = _appSettings.Identity.ScopeBaseDomain + "/write";
-        var scopes = new[] { readScope, writeScope };
-        var scopeClaim = new Claim("scope", string.Join(" ", scopes));
+        string[] scopes = new[] { readScope, writeScope };
+        Claim scopeClaim = new Claim("scope", string.Join(" ", scopes));
         await _userManager.AddClaimAsync(user, scopeClaim);
 
         // 7. Map response DTO
-        var response = _mapper.Map<SignUpResponse>(user);
+        SignUpResponse response = _mapper.Map<SignUpResponse>(user);
 
         // 8. Log: Successful signup
         _appLogger.LogSignUpResult(request.UserName, true);

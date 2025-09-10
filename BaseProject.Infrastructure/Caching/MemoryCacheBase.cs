@@ -1,18 +1,18 @@
-﻿using System.Collections.Concurrent;
-using BaseProject.Application.Common.Interfaces;
+﻿using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Utilities;
 using BaseProject.Domain.Enums;
 using BaseProject.Domain.Events;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
+using System.Collections.Concurrent;
 
 namespace BaseProject.Infrastructure.Caching
 {
     /// <summary>
     /// Represents a manager for memory caching
     /// </summary>
-    public partial class MemoryCacheBase : ICacheBase
+    public class MemoryCacheBase : ICacheBase, IDisposable
     {
         #region Fields
 
@@ -20,23 +20,18 @@ namespace BaseProject.Infrastructure.Caching
         private readonly IMediator _mediator;
 
         private bool _disposed;
-        private static CancellationTokenSource _resetCacheToken = new CancellationTokenSource();
+        private CancellationTokenSource _resetCacheToken = new CancellationTokenSource();
 
-        protected static readonly ConcurrentDictionary<string, bool> _allCacheKeys;
+        protected static readonly ConcurrentDictionary<string, bool> _allCacheKeys = new();
 
         #endregion
 
         #region Ctor
 
-        static MemoryCacheBase()
-        {
-            _allCacheKeys = new ConcurrentDictionary<string, bool>();
-        }
-
         public MemoryCacheBase(IMemoryCache cache, IMediator mediator)
         {
-            _cache = cache;
-            _mediator = mediator;
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
 
         #endregion
@@ -62,6 +57,7 @@ namespace BaseProject.Infrastructure.Caching
                 return acquire();
             });
         }
+
         public virtual Task SetAsync(string key, object data, int cacheTime)
         {
             if (data != null)
@@ -74,6 +70,8 @@ namespace BaseProject.Infrastructure.Caching
         public virtual Task RemoveAsync(string key, bool publisher = true)
         {
             _cache.Remove(key);
+            RemoveKey(key);
+
             if (publisher)
                 _mediator.Publish(new EntityCacheEvent(key, CacheEvent.RemoveKey));
 
@@ -82,11 +80,16 @@ namespace BaseProject.Infrastructure.Caching
 
         public virtual Task RemoveByPrefix(string prefix, bool publisher = true)
         {
-            var keysToRemove = _allCacheKeys.Keys.Where(x => x.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
-            foreach (var key in keysToRemove)
+            List<string> keysToRemove = _allCacheKeys.Keys
+                .Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (string key in keysToRemove)
             {
                 _cache.Remove(key);
+                RemoveKey(key);
             }
+
             if (publisher)
                 _mediator.Publish(new EntityCacheEvent(prefix, CacheEvent.RemovePrefix));
 
@@ -95,41 +98,14 @@ namespace BaseProject.Infrastructure.Caching
 
         public virtual Task Clear(bool publisher = true)
         {
-            //clear key
             ClearKeys();
-
-            //cancel
             _resetCacheToken.Cancel();
-            //dispose
-            _resetCacheToken.Dispose();
-
-            _resetCacheToken = new CancellationTokenSource();
-
+            _resetCacheToken = new CancellationTokenSource(); // old one will be GC-ed
+            if (publisher)
+                _mediator.Publish(new EntityCacheEvent(string.Empty, CacheEvent.RemoveKey));
             return Task.CompletedTask;
         }
 
-        ~MemoryCacheBase()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _cache.Dispose();
-                }
-                _disposed = true;
-            }
-        }
 
         #endregion
 
@@ -137,13 +113,11 @@ namespace BaseProject.Infrastructure.Caching
 
         protected MemoryCacheEntryOptions GetMemoryCacheEntryOptions(int cacheTime)
         {
-            var options = new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheTime) }
+            return new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(cacheTime))
                 .AddExpirationToken(new CancellationChangeToken(_resetCacheToken.Token))
-                .RegisterPostEvictionCallback(PostEvictionCallback);
-
-            return options;
+                .RegisterPostEvictionCallback(callback: PostEvictionCallback);
         }
-
 
         protected string AddKey(string key)
         {
@@ -157,7 +131,6 @@ namespace BaseProject.Infrastructure.Caching
             return key;
         }
 
-
         private void ClearKeys()
         {
             _allCacheKeys.Clear();
@@ -165,10 +138,7 @@ namespace BaseProject.Infrastructure.Caching
 
         private void PostEvictionCallback(object key, object value, EvictionReason reason, object state)
         {
-            if (reason == EvictionReason.Replaced)
-                return;
-
-            if (reason == EvictionReason.TokenExpired)
+            if (reason is EvictionReason.Replaced or EvictionReason.TokenExpired)
                 return;
 
             RemoveKey(key.ToString());
@@ -176,5 +146,10 @@ namespace BaseProject.Infrastructure.Caching
 
         #endregion
 
+        #region Dispose
+
+        public void Dispose() => _disposed = true;
+
+        #endregion
     }
 }

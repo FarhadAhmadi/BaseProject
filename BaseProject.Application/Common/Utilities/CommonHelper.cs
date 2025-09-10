@@ -53,11 +53,13 @@ namespace BaseProject.Application.Common.Utilities
         public static string GenerateRandomDigitCode(int length)
         {
             string str = string.Empty;
-            RNGCryptoServiceProvider provider = new RNGCryptoServiceProvider();
-            var byteArray = new byte[length];
-            provider.GetBytes(byteArray);
-            for (int i = 0; i < length; i++)
-                str = String.Concat(str, byteArray[i].ToString());
+            using (RNGCryptoServiceProvider provider = new())
+            {
+                var byteArray = new byte[length];
+                provider.GetBytes(byteArray);
+                for (int i = 0; i < length; i++)
+                    str = String.Concat(str, byteArray[i].ToString());
+            }
 
             return str.Substring(0, length);
         }
@@ -257,7 +259,7 @@ namespace BaseProject.Application.Common.Utilities
         /// <summary>
         /// Gets or sets application default cache time minutes
         /// </summary>
-        public static int CacheTimeMinutes { get; set; }
+        public static int CacheTimeMinutes { get; set; } = 30;
 
         /// <summary>
         /// Gets or sets a value indicating for cookie expires in hours

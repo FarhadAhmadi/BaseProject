@@ -44,14 +44,14 @@ namespace BaseProject.Application.Services
 
         public async Task<TokenResponseDto> Authenticate(LoginRequestDto request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.Users
+            ApplicationUser user = await _userManager.Users
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName, cancellationToken)
                 ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             // Step 2: Check the password first to avoid unnecessary database queries if invalid.
-            var passwordCheckResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            SignInResult passwordCheckResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
 
             if (!passwordCheckResult.Succeeded)
             {
@@ -59,11 +59,11 @@ namespace BaseProject.Application.Services
             }
 
             // Step 3: Retrieve user's claims in bulk to avoid multiple individual queries.
-            var userClaims = await _userManager.GetClaimsAsync(user);
-            var scopes = userClaims.FirstOrDefault(c => c.Type == "scope")?.Value.Split(' ') ?? Array.Empty<string>();
+            IList<Claim> userClaims = await _userManager.GetClaimsAsync(user);
+            string[] scopes = userClaims.FirstOrDefault(c => c.Type == "scope")?.Value.Split(' ') ?? Array.Empty<string>();
 
             // Step 4: Generate authentication token.
-            var token = await _tokenService.GenerateToken(user, scopes, cancellationToken);
+            TokenResponseDto token = await _tokenService.GenerateToken(user, scopes, cancellationToken);
             _cookieService.Delete();
             _cookieService.Set(token.Token);
 
@@ -78,18 +78,18 @@ namespace BaseProject.Application.Services
             if (await _userManager.FindByEmailAsync(request.Email) != null)
                 throw AuthIdentityException.ThrowEmailAvailable();
 
-            var user = new ApplicationUser()
+            ApplicationUser user = new()
             {
                 Email = request.Email,
                 UserName = request.UserName,
                 FullName = request.Name
             };
-            var result = await _userManager.CreateAsync(user, request.Password);
+            IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {
                 List<IdentityError> errorList = result.Errors.ToList();
-                var errors = string.Join(", ", errorList.Select(e => e.Description));
+                string errors = string.Join(", ", errorList.Select(e => e.Description));
                 throw AuthIdentityException.ThrowRegisterUnsuccessful(errors);
             }
 
@@ -100,7 +100,7 @@ namespace BaseProject.Application.Services
             string[] scopes = [readScope, writeScope];
 
             // Add custom scope claim to the user
-            var scopeClaim = new Claim("scope", string.Join(" ", scopes)); // Space-separated scopes
+            Claim scopeClaim = new("scope", string.Join(" ", scopes)); // Space-separated scopes
 
             await _userManager.AddClaimAsync(user, scopeClaim);
         }
@@ -108,10 +108,10 @@ namespace BaseProject.Application.Services
         //Refresh Token
         public async Task<TokenResponseDto> RefreshTokenAsync(string token, CancellationToken cancellationToken)
         {
-            var user = await _userManager.Users.Include(x => x.RefreshTokens)
+            ApplicationUser user = await _userManager.Users.Include(x => x.RefreshTokens)
                                                .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
-            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+            UserRefreshToken refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
             if (!refreshToken.IsActive)
                 throw AuthIdentityException.ThrowTokenNotActive();
@@ -120,13 +120,13 @@ namespace BaseProject.Application.Services
             refreshToken.Revoked = DateTime.UtcNow;
 
             // Retrieve user's claims, including scope claim
-            var userClaims = await _userManager.GetClaimsAsync(user);
-            var scopeClaim = userClaims.FirstOrDefault(c => c.Type == "scope");
+            IList<Claim> userClaims = await _userManager.GetClaimsAsync(user);
+            Claim? scopeClaim = userClaims.FirstOrDefault(c => c.Type == "scope");
 
             // Extract scopes from the claim, if it exists
-            var scopes = scopeClaim?.Value.Split(' ') ?? [];
+            string[] scopes = scopeClaim?.Value.Split(' ') ?? [];
 
-            var result = await _tokenService.GenerateToken(user, scopes, cancellationToken);
+            TokenResponseDto result = await _tokenService.GenerateToken(user, scopes, cancellationToken);
             _cookieService.Delete();
             _cookieService.Set(result.Token);
             return result;
@@ -134,7 +134,7 @@ namespace BaseProject.Application.Services
 
         public async Task<UserResponseDto> Get(CancellationToken cancellationToken)
         {
-            var users = await _userManager.Users
+            UserResponseDto users = await _userManager.Users
                         .Include(u => u.UserRoles)
                             .ThenInclude(ur => ur.Role)
                         .Include(u => u.Avatar).Select(x => new UserResponseDto
@@ -155,16 +155,16 @@ namespace BaseProject.Application.Services
         public async Task<UserPasswordReset> SendPasswordResetCode(SendPasswordResetCodeRequestDto request, CancellationToken cancellationToken)
         {
             //Get identity user details user manager
-            var user = await _userManager.FindByEmailAsync(request.Email)
+            ApplicationUser user = await _userManager.FindByEmailAsync(request.Email)
                 ?? throw AuthIdentityException.ThrowUserNotFound();
 
             //Generate password reset token
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             //Generate OTP
             int otp = NumberHelper.GenerateRandom(100000, 999999);
 
-            var resetPassword = new UserPasswordReset()
+            UserPasswordReset resetPassword = new()
             {
                 Email = request.Email,
                 OTP = otp.ToString(),
@@ -190,10 +190,10 @@ namespace BaseProject.Application.Services
         public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
         {
             //Get identity user details user manager
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            ApplicationUser? user = await _userManager.FindByEmailAsync(request.Email);
 
             //Getting token from otp
-            var resetPasswordDetails = await _unitOfWork.ForgotPasswords.GetFirstOrDefaultAsync<UserPasswordReset>(
+            UserPasswordReset? resetPasswordDetails = await _unitOfWork.ForgotPasswords.GetFirstOrDefaultAsync<UserPasswordReset>(
                 filter: x => x.OTP == request.OTP && x.UserId == user.Id.ToString(),
                 orderBy: x => x.DateTime,
                 ascending: false
@@ -201,14 +201,14 @@ namespace BaseProject.Application.Services
 
 
             //Verify if token is older than 3 minutes
-            var expirationDateTime = resetPasswordDetails.DateTime.AddMinutes(3);
+            DateTime expirationDateTime = resetPasswordDetails.DateTime.AddMinutes(3);
 
             if (expirationDateTime < DateTime.Now)
             {
                 throw AuthIdentityException.ThrowGenerateTheNewOTP();
             }
 
-            var res = await _userManager.ResetPasswordAsync(user, resetPasswordDetails.Token, request.NewPassword);
+            IdentityResult res = await _userManager.ResetPasswordAsync(user, resetPasswordDetails.Token, request.NewPassword);
 
             if (!res.Succeeded)
                 throw AuthIdentityException.ThrowOTPWrong();

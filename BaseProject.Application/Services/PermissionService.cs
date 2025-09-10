@@ -1,267 +1,175 @@
 ﻿using BaseProject.Application.Common.Interfaces;
 using BaseProject.Domain.Entities.Auth;
-using BaseProject.Domain.Entities.Security;
+using BaseProject.Domain.Entities.Authorization;
 using BaseProject.Domain.Interfaces;
 using BaseProject.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace BaseProject.Application.Services
 {
-    /// <summary>
-    /// Permission service
-    /// </summary>
     public partial class PermissionService(
         ICurrentUser currentUser,
         ICacheBase cacheManager,
         IUnitOfWork unitOfWork
-        ) : IPermissionService
+    ) : IPermissionService
     {
-
         #region Utilities
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="customerRole">Customer role</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        protected virtual async Task<bool> Authorize(string permissionRecordSystemName, ApplicationRole role)
+        private async Task<bool> AuthorizePermissionForRoleAsync(string permissionSystemName, ApplicationRole role)
         {
-            if (string.IsNullOrEmpty(permissionRecordSystemName))
+            if (string.IsNullOrWhiteSpace(permissionSystemName) || role == null)
                 return false;
 
-            string key = string.Format(CacheKey.PERMISSIONS_ALLOWED_KEY, role.Id, permissionRecordSystemName);
-            return await cacheManager.GetAsync(key, async () =>
+            string cacheKey = string.Format(CacheKey.PERMISSIONS_ALLOWED_KEY, role.Id, permissionSystemName);
+
+            return await cacheManager.GetAsync(cacheKey, async () =>
             {
-                var permissionRecord = await unitOfWork.PermissionRecordRepository.Table.FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName);
-                return permissionRecord?.UserRoles.Contains(role.Id) ?? false;
+                PermissionRecord? permission = await unitOfWork.PermissionRecordRepository.Table
+                    .Include(pr => pr.Actions)
+                        .ThenInclude(a => a.RolePermissionActions)
+                    .FirstOrDefaultAsync(pr => pr.SystemName == permissionSystemName);
+
+                return permission?.Actions
+                    .SelectMany(a => a.RolePermissionActions)
+                    .Any(rpa => rpa.RoleId == role.Id) ?? false;
             });
         }
 
         #endregion
 
-        #region Methods
+        #region CRUD Methods
 
-        /// <summary>
-        /// Delete a permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        public virtual async Task DeletePermissionRecord(PermissionRecord permission)
+        public async Task DeletePermissionRecordAsync(PermissionRecord permission)
         {
-            if (permission == null)
-                throw new ArgumentNullException("permission");
+            ArgumentNullException.ThrowIfNull(permission);
 
             unitOfWork.PermissionRecordRepository.Delete(permission);
             await unitOfWork.SaveChangesAsync();
-
             await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
-        /// <summary>
-        /// Gets a permission
-        /// </summary>
-        /// <param name="permissionId">Permission identifier</param>
-        /// <returns>Permission</returns>
-        public virtual Task<PermissionRecord> GetPermissionRecordById(string permissionId)
+        public async Task<PermissionRecord?> GetPermissionRecordByIdAsync(string permissionId) 
+            => await unitOfWork.PermissionRecordRepository.GetByIdAsync(permissionId);
+
+        public async Task<PermissionRecord?> GetPermissionRecordBySystemNameAsync(string systemName)
         {
-            return unitOfWork.PermissionRecordRepository.GetByIdAsync(permissionId);
+            if (string.IsNullOrWhiteSpace(systemName)) return null;
+
+            return await unitOfWork.PermissionRecordRepository.Table
+                .FirstOrDefaultAsync(pr => pr.SystemName == systemName);
         }
 
-        /// <summary>
-        /// Gets a permission
-        /// </summary>
-        /// <param name="systemName">Permission system name</param>
-        /// <returns>Permission</returns>
-        public virtual async Task<PermissionRecord> GetPermissionRecordBySystemName(string systemName)
+        public async Task<List<PermissionRecord>> GetAllPermissionRecordsAsync() 
+            => await unitOfWork.PermissionRecordRepository.Table
+                .OrderBy(pr => pr.Name)
+                .ToListAsync();
+
+        public async Task InsertPermissionRecordAsync(PermissionRecord permission)
         {
-            if (String.IsNullOrWhiteSpace(systemName))
-                return await Task.FromResult<PermissionRecord>(null);
-
-            var query = from pr in unitOfWork.PermissionRecordRepository.Table
-                        where pr.SystemName == systemName
-                        orderby pr.Id
-                        select pr;
-
-            return await query.FirstOrDefaultAsync();
-        }
-
-        /// <summary>
-        /// Gets all permissions
-        /// </summary>
-        /// <returns>Permissions</returns>
-        public virtual async Task<IList<PermissionRecord>> GetAllPermissionRecords()
-        {
-            var query = from pr in unitOfWork.PermissionRecordRepository.Table
-                        orderby pr.Name
-                        select pr;
-            return await query.ToListAsync();
-        }
-
-        /// <summary>
-        /// Inserts a permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        public virtual async Task InsertPermissionRecord(PermissionRecord permission)
-        {
-            if (permission == null)
-                throw new ArgumentNullException("permission");
+            ArgumentNullException.ThrowIfNull(permission);
 
             await unitOfWork.PermissionRecordRepository.AddAsync(permission);
-
             await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
-        /// <summary>
-        /// Updates the permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        public virtual async Task UpdatePermissionRecord(PermissionRecord permission)
+        public async Task UpdatePermissionRecordAsync(PermissionRecord permission)
         {
-            if (permission == null)
-                throw new ArgumentNullException("permission");
+            ArgumentNullException.ThrowIfNull(permission);
 
             unitOfWork.PermissionRecordRepository.Update(permission);
             await unitOfWork.SaveChangesAsync();
-
             await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permission">Permission record</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(PermissionRecord permission)
-        {
-            return await Authorize(permission, await currentUser.GetCurrentUser());
-        }
+        #endregion
 
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permission">Permission record</param>
-        /// <param name="customer">Customer</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(PermissionRecord permission, ApplicationUser user)
+        #region Authorization Methods
+
+        public async Task<bool> AuthorizeAsync(string permissionSystemName, ApplicationUser? user = null)
         {
-            if (permission == null)
+            if (string.IsNullOrWhiteSpace(permissionSystemName))
                 return false;
 
-            if (user == null)
-                return false;
+            user ??= await currentUser.GetCurrentUser();
+            if (user == null) return false;
 
-            return await Authorize(permission.SystemName, user);
-        }
+            IEnumerable<ApplicationRole> roles = await unitOfWork.Users.GetUserRolesAsync(user.Id);
 
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(string permissionRecordSystemName)
-        {
-            return await Authorize(permissionRecordSystemName, await currentUser.GetCurrentUser());
-        }
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="customer">Customer</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> Authorize(string permissionRecordSystemName, ApplicationUser user)
-        {
-            if (String.IsNullOrEmpty(permissionRecordSystemName))
-                return false;
-
-            var roles = await unitOfWork.Users.GetUserRolesAsync(user.Id);
-
-            foreach (var role in roles)
-                if (await Authorize(permissionRecordSystemName, role))
-                    //yes, we have such permission
+            foreach (ApplicationRole role in roles)
+            {
+                if (await AuthorizePermissionForRoleAsync(permissionSystemName, role))
                     return true;
+            }
 
-            //no permission found
+            return false; // No role allowed
+        }
+
+        public async Task<bool> AuthorizeActionAsync(string permissionSystemName, string actionName)
+        {
+            if (string.IsNullOrWhiteSpace(permissionSystemName) || string.IsNullOrWhiteSpace(actionName))
+                return false;
+
+            ApplicationUser user = await currentUser.GetCurrentUser();
+            if (user == null) return false;
+
+            IEnumerable<ApplicationRole> roles = await unitOfWork.Users.GetUserRolesAsync(user.Id);
+
+            PermissionRecord? permissionRecord = await unitOfWork.PermissionRecordRepository.Table
+                .Include(pr => pr.Actions)
+                    .ThenInclude(a => a.RolePermissionActions)
+                .FirstOrDefaultAsync(pr => pr.SystemName == permissionSystemName);
+
+            if (permissionRecord == null) return false;
+
+            foreach (ApplicationRole? role in roles.Where(r => r.Active))
+            {
+                bool hasPermissionRecord = permissionRecord.Actions
+                    .SelectMany(a => a.RolePermissionActions)
+                    .Any(rpa => rpa.RoleId == role.Id);
+
+                if (!hasPermissionRecord) continue;
+
+                string cacheKey = string.Format(CacheKey.PERMISSIONS_ALLOWED_ACTION_KEY, role.Id, permissionSystemName, actionName);
+
+                PermissionAction? hasPermissionAction = await cacheManager.GetAsync(cacheKey, async () =>
+                {
+                    return permissionRecord.Actions
+                        .SelectMany(a => a.RolePermissionActions)
+                        .Where(rpa => rpa.RoleId == role.Id)
+                        .Select(rpa => rpa.PermissionAction)
+                        .FirstOrDefault(pa => pa.Name == actionName || pa.SystemName == actionName);
+                });
+
+                if (hasPermissionAction != null) return true;
+            }
+
             return false;
         }
 
-        /// <summary>
-        /// Gets a permission action
-        /// </summary>
-        /// <param name="systemName">Permission system name</param>
-        /// <param name="customeroleId">Customer role ident</param>
-        /// <returns>Permission action</returns>
-        public virtual async Task<IList<PermissionAction>> GetPermissionActions(string systemName, string roleId)
-        {
-            return await unitOfWork.PermissionActionRepository.Table
-                    .Where(x => x.SystemName == systemName && x.UserRoleId == roleId).ToListAsync();
-        }
+        #endregion
 
-        /// <summary>
-        /// Inserts a permission action record
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        public virtual async Task InsertPermissionActionRecord(PermissionAction permissionAction)
-        {
-            if (permissionAction == null)
-                throw new ArgumentNullException("permissionAction");
+        #region PermissionAction CRUD
 
-            //insert
+        public async Task<IList<PermissionAction>> GetPermissionActionsAsync(string systemName, string roleId) 
+            => await unitOfWork.PermissionActionRepository.Table
+                .Where(x => x.SystemName == systemName && x.RolePermissionActions.Any(rp => rp.RoleId == roleId))
+                .ToListAsync();
+
+        public async Task InsertPermissionActionRecordAsync(PermissionAction permissionAction)
+        {
+            ArgumentNullException.ThrowIfNull(permissionAction);
+
             await unitOfWork.PermissionActionRepository.AddAsync(permissionAction);
             await unitOfWork.SaveChangesAsync();
-            //clear cache
             await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
         }
 
-        /// <summary>
-        /// Inserts a permission action record
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        public virtual async Task DeletePermissionActionRecord(PermissionAction permissionAction)
+        public async Task DeletePermissionActionRecordAsync(PermissionAction permissionAction)
         {
-            if (permissionAction == null)
-                throw new ArgumentNullException("permissionAction");
+            ArgumentNullException.ThrowIfNull(permissionAction);
 
-            //delete
             unitOfWork.PermissionActionRepository.Delete(permissionAction);
             await unitOfWork.SaveChangesAsync();
-            //clear cache
             await cacheManager.RemoveByPrefix(CacheKey.PERMISSIONS_PATTERN_KEY);
-        }
-
-        /// <summary>
-        /// Authorize permission for action
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="permissionActionName">Permission action name</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual async Task<bool> AuthorizeAction(string permissionRecordSystemName, string permissionActionName)
-        {
-            if (string.IsNullOrEmpty(permissionRecordSystemName) || string.IsNullOrEmpty(permissionActionName))
-                return false;
-
-            if (!await Authorize(permissionRecordSystemName))
-                return false;
-
-            var userId = currentUser.GetCurrentUserId();
-
-            var customerRoles = await unitOfWork.Users.GetUserRolesAsync(userId);
-            foreach (var role in customerRoles.Where(x => x.Active))
-            {
-                if (!await Authorize(permissionRecordSystemName, role))
-                    continue;
-
-                var key = string.Format(CacheKey.PERMISSIONS_ALLOWED_ACTION_KEY, role.Id, permissionRecordSystemName, permissionActionName);
-                var permissionAction = await cacheManager.GetAsync(key, async () =>
-                {
-                    return await unitOfWork.PermissionActionRepository.Table
-                        .FirstOrDefaultAsync(x => x.SystemName == permissionRecordSystemName && x.UserRoleId == role.Id && x.Action == permissionActionName);
-                });
-                if (permissionAction != null)
-                    return false;
-            }
-
-            return true;
         }
 
         #endregion

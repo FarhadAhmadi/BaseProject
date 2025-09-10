@@ -12,7 +12,7 @@ namespace BaseProject.API.Extensions
     {
         public static void AddAuth(this IServiceCollection services, Identity identitySettings)
         {
-            var authenticationBuilder = services.AddAuthentication(op =>
+            Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = services.AddAuthentication(op =>
             {
                 op.DefaultAuthenticateScheme =
                 op.DefaultChallengeScheme =
@@ -42,7 +42,7 @@ namespace BaseProject.API.Extensions
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
 
-                        var response = ResponseDto<object>.FailResponse(
+                        ResponseDto<object> response = ResponseDto<object>.FailResponse(
                             message: "Authentication failed.",
                             data: context.Exception?.Message
                         );
@@ -56,7 +56,7 @@ namespace BaseProject.API.Extensions
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
 
-                        var response = ResponseDto<object>.FailResponse("Authentication failed.");
+                        ResponseDto<object> response = ResponseDto<object>.FailResponse("Authentication failed.");
                         await context.Response.WriteAsJsonAsync(response);
                     }
                 };
@@ -80,7 +80,7 @@ namespace BaseProject.API.Extensions
 
             services.AddAuthorization(options =>
             {
-                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}";
+                string authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}";
                 options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
 
                 options.AddPolicy("user_read", policy => policy.Requirements.Add(
@@ -98,7 +98,7 @@ namespace BaseProject.API.Extensions
         }
         public static void AddAuthLocal(this IServiceCollection services, Identity identitySettings)
         {
-            var authenticationBuilder = services.AddAuthentication(op =>
+            Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = services.AddAuthentication(op =>
             {
                 op.DefaultAuthenticateScheme =
                 op.DefaultChallengeScheme =
@@ -128,7 +128,7 @@ namespace BaseProject.API.Extensions
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
 
-                        var response = ResponseDto<object>.FailResponse(
+                        ResponseDto<object> response = ResponseDto<object>.FailResponse(
                             message: "Authentication failed.",
                             data: context.Exception?.Message
                         );
@@ -142,7 +142,7 @@ namespace BaseProject.API.Extensions
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
 
-                        var response = ResponseDto<object>.FailResponse("Authentication failed.");
+                        ResponseDto<object> response = ResponseDto<object>.FailResponse("Authentication failed.");
                         await context.Response.WriteAsJsonAsync(response);
                     }
                 };
@@ -167,7 +167,7 @@ namespace BaseProject.API.Extensions
 
             services.AddAuthorization(options =>
             {
-                var authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}"; 
+                string authSchemes = $"{JwtBearerDefaults.AuthenticationScheme}_{identitySettings.Issuer}"; 
                 options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(authSchemes).Build();
 
                 options.AddPolicy("user_read", policy => policy.Requirements.Add(

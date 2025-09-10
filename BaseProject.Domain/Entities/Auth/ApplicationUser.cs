@@ -1,7 +1,7 @@
-﻿using BaseProject.Domain.Enums;
+﻿using BaseProject.Domain.Entities.Authorization;
+using BaseProject.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
 
 namespace BaseProject.Domain.Entities.Auth
 {
@@ -31,30 +31,33 @@ namespace BaseProject.Domain.Entities.Auth
 
 
         [SwaggerSchema("Roles assigned to the user.")]
-        public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = new List<ApplicationUserRole>();
+        public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = [];
 
 
         [SwaggerSchema("Claims associated with the user.")]
-        public virtual ICollection<ApplicationUserClaim> Claims { get; set; } = new List<ApplicationUserClaim>();
+        public virtual ICollection<ApplicationUserClaim> Claims { get; set; } = [];
 
 
         [SwaggerSchema("External login providers linked to the user.")]
-        public virtual ICollection<ApplicationUserLogin> Logins { get; set; } = new List<ApplicationUserLogin>();
+        public virtual ICollection<ApplicationUserLogin> Logins { get; set; } = [];
 
 
         [SwaggerSchema("Authentication tokens for the user.")]
-        public virtual ICollection<ApplicationUserToken> Tokens { get; set; } = new List<ApplicationUserToken>();
+        public virtual ICollection<ApplicationUserToken> Tokens { get; set; } = [];
 
 
         [SwaggerSchema("Refresh tokens issued to the user.")]
-        public virtual ICollection<UserRefreshToken> RefreshTokens { get; set; } = new List<UserRefreshToken>();
+        public virtual ICollection<UserRefreshToken> RefreshTokens { get; set; } = [];
 
 
         [SwaggerSchema("Password reset requests associated with the user.")]
-        public virtual ICollection<UserPasswordReset> PasswordResetRequests { get; set; } = new List<UserPasswordReset>();
+        public virtual ICollection<UserPasswordReset> PasswordResetRequests { get; set; } = [];
+
+        [SwaggerSchema("Custom permissions assigned directly to the user.")]
+        public virtual ICollection<UserPermissionAction> UserPermissions { get; set; } = [];
 
         #region Audit Properties
-        public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset CreatedOn { get; set; } = DateTime.UtcNow;
         public string? CreatorId { get; set; }
         public DateTimeOffset? UpdatedOn { get; set; }
         public string? UpdaterId { get; set; }

@@ -34,6 +34,7 @@ public static class ConfigureServices
         services.AddAutoMapper(typeof(MapProfile).Assembly);
 
         services.AddTransient<IUserContext, UserContext>();
+        services.AddTransient<IPermissionService, PermissionService>();
         //services.AddTransient<IBookService, BookService>();
         //services.AddTransient<IAuthorService, AuthorService>();
         //services.AddTransient<IPublisherService, PublisherService>();
@@ -42,6 +43,8 @@ public static class ConfigureServices
         services.AddTransient<IMediaService, MediaService>();
         services.AddTransient<IRoleService, RoleService>();
         services.AddTransient<IAuthIdentityService, AuthIdentityService>();
+        
+        services.AddTransient<IPermissionService, PermissionService>();
 
         if (appsettings.FileStorageSettings.LocalStorage)
         {

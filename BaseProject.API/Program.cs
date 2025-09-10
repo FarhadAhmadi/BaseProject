@@ -6,29 +6,29 @@ using Serilog;
 
 try
 {
-    var builder = WebApplication.CreateBuilder(args);
+    WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     // --- Step 1: Load AppSettings ---
-    var configuration = builder.Configuration.Get<AppSettings>()
+    AppSettings configuration = builder.Configuration.Get<AppSettings>()
         ?? throw ProgramException.AppsettingNotSetException();
 
     builder.Services.AddSingleton(configuration);
 
     // --- Step 2: Configure services & build app ---
-    var app = await builder.ConfigureServices(configuration)
+    WebApplication app = await builder.ConfigureServices(configuration)
                            .ConfigurePipelineAsync(configuration);
 
     // Resolve logger from DI
-    var logger = app.Services.GetRequiredService<IAppLogger>();
+    IAppLogger logger = app.Services.GetRequiredService<IAppLogger>();
 
     // Log that app is starting
-    var port = configuration.AppUrl ?? "default port";
+    string port = configuration.AppUrl ?? "default port";
     logger.Info("Application running on port {Port}", port);
     logger.Info("Environment: {Environment}", builder.Environment.EnvironmentName);
     logger.Info("UseInMemoryDatabase: {UseInMemoryDatabase}", configuration.UseInMemoryDatabase);
 
     // Optional: log all configured URLs
-    foreach (var url in app.Urls)
+    foreach (string url in app.Urls)
     {
         logger.Info("Listening on: {Url}", url);
     }

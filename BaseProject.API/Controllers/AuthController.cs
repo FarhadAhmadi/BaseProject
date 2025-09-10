@@ -31,7 +31,7 @@ namespace BaseProject.API.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error", typeof(ResponseDto<object>))]
         public async Task<IActionResult> SignIn([FromBody] SignInRequestDto request, CancellationToken token)
         {
-            var result = await _mediator.Send(new SignInCommand
+            SignInResponseDto result = await _mediator.Send(new SignInCommand
             {
                 UserName = request.UserName,
                 Password = request.Password
@@ -50,7 +50,7 @@ namespace BaseProject.API.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request.")]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequestDto request, CancellationToken token)
         {
-            var result = await _mediator.Send(new SignUpCommand
+            SignUpResponse result = await _mediator.Send(new SignUpCommand
             {
                 FullName = request.FullName,
                 UserName = request.UserName,
@@ -86,7 +86,7 @@ namespace BaseProject.API.Controllers
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Refresh token is invalid or expired.")]
         public async Task<IActionResult> RefreshToken([FromBody]string token ,CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(new RefreshTokenCommand() { Token = token}, cancellationToken);
+            RefreshTokenResponse response = await _mediator.Send(new RefreshTokenCommand() { Token = token}, cancellationToken);
 
             return response == null || string.IsNullOrEmpty(response.AccessToken)
                 ? Fail<string>("Refresh token is invalid or expired", StatusCodes.Status401Unauthorized)
@@ -103,7 +103,7 @@ namespace BaseProject.API.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Profile not found.")]
         public async Task<IActionResult> GetProfile(CancellationToken token)
         {
-            var profile = await _mediator.Send(new GetProfileQuery(), token);
+            ProfileResponse profile = await _mediator.Send(new GetProfileQuery(), token);
 
             return profile == null
                 ? Fail<ProfileResponse>("Profile not found", StatusCodes.Status404NotFound)

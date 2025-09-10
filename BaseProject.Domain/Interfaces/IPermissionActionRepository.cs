@@ -1,4 +1,4 @@
-﻿using BaseProject.Domain.Entities.Security;
+﻿using BaseProject.Domain.Entities.Authorization;
 
 namespace BaseProject.Domain.Interfaces
 {

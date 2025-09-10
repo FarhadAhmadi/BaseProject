@@ -56,25 +56,6 @@ namespace BaseProject.Infrastructure.Persistence.Configurations
                    .IsRequired()
                    .HasMaxLength(500)
                    .HasComment("Attribute value associated with the key. Required. Maximum length of 500 characters.");
-
-            builder.Property(a => a.BaseEntityId)
-                   .IsRequired()
-                   .HasComment("Foreign key linking this attribute to its parent BaseEntity.");
-
-            // -----------------------------
-            // Relationship configuration
-            // -----------------------------
-            builder.HasOne(a => a.BaseEntity)           // Each GenericAttribute has one BaseEntity
-                   .WithMany(b => b.GenericAttributes) // Each BaseEntity has many GenericAttributes
-                   .HasForeignKey(a => a.BaseEntityId)
-                   .OnDelete(DeleteBehavior.Cascade)  // Cascade delete to remove attributes when BaseEntity is deleted
-                   .HasConstraintName("FK_GenericAttributes_BaseEntity");
-
-            // -----------------------------
-            // Index configuration
-            // -----------------------------
-            builder.HasIndex(a => new { a.BaseEntityId, a.Key })
-                   .HasDatabaseName("IX_GenericAttributes_BaseEntityId_Key");
         }
     }
 }

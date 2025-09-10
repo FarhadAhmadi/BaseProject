@@ -22,10 +22,58 @@ namespace BaseProject.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationRole", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.AuditLog", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Changes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdaterId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs", "Logging");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -64,20 +112,22 @@ namespace BaseProject.Infrastructure.Migrations
                         new
                         {
                             Id = "A3314BE5-4C77-4FB6-82AD-302014682A73",
-                            CreatedOn = new DateTimeOffset(new DateTime(2025, 8, 24, 16, 53, 41, 570, DateTimeKind.Unspecified).AddTicks(8810), new TimeSpan(0, 3, 30, 0, 0)),
+                            Active = false,
+                            CreatedOn = new DateTimeOffset(new DateTime(2025, 9, 10, 8, 35, 6, 423, DateTimeKind.Unspecified).AddTicks(936), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
                             Id = "B4314BE5-4C77-4FB6-82AD-302014682B13",
-                            CreatedOn = new DateTimeOffset(new DateTime(2025, 8, 24, 16, 53, 41, 570, DateTimeKind.Unspecified).AddTicks(8904), new TimeSpan(0, 3, 30, 0, 0)),
+                            Active = false,
+                            CreatedOn = new DateTimeOffset(new DateTime(2025, 9, 10, 8, 35, 6, 423, DateTimeKind.Unspecified).AddTicks(1060), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "User",
                             NormalizedName = "User"
                         });
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationRoleClaim", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationRoleClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,7 +164,7 @@ namespace BaseProject.Infrastructure.Migrations
                     b.ToTable("RoleClaims", "Identity");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -210,15 +260,15 @@ namespace BaseProject.Infrastructure.Migrations
                         {
                             Id = "69DB714F-9576-45BA-B5B7-F00649BE01DE",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "c1a4e0e0-0c11-4c7e-a535-e385ec02c92e",
-                            CreatedOn = new DateTimeOffset(new DateTime(2025, 8, 24, 16, 53, 41, 570, DateTimeKind.Unspecified).AddTicks(8930), new TimeSpan(0, 3, 30, 0, 0)),
+                            ConcurrencyStamp = "249c077a-f77f-4448-a00b-023b4e0cf255",
+                            CreatedOn = new DateTimeOffset(new DateTime(2025, 9, 10, 8, 35, 6, 423, DateTimeKind.Unspecified).AddTicks(1115), new TimeSpan(0, 0, 0, 0, 0)),
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             FullName = "Admin 1",
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHqh7HD8B+nF4BHYKmpgq75DnYaWPTTdRIOxuQ5ixUkXYjacp6ddYkR9IeTxfwRxxA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDe/IodOdskgvW9hLVbvkdz5FdayPjgf9H7xZxjpSl2Ra/NvMvfywju8RCCLA0TyaA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -226,7 +276,7 @@ namespace BaseProject.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserClaim", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,15 +313,12 @@ namespace BaseProject.Infrastructure.Migrations
                     b.ToTable("UserClaims", "Identity");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserLogin", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserLogin", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("CreatedOn")
@@ -289,14 +336,18 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Property<string>("UpdaterId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("LoginProvider", "ProviderKey", "UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("UserLogins", "Identity");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserRole", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserRole", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -327,11 +378,11 @@ namespace BaseProject.Infrastructure.Migrations
                         {
                             UserId = "69DB714F-9576-45BA-B5B7-F00649BE01DE",
                             RoleId = "A3314BE5-4C77-4FB6-82AD-302014682A73",
-                            CreatedOn = new DateTimeOffset(new DateTime(2025, 8, 24, 16, 53, 41, 639, DateTimeKind.Unspecified).AddTicks(321), new TimeSpan(0, 3, 30, 0, 0))
+                            CreatedOn = new DateTimeOffset(new DateTime(2025, 9, 10, 8, 35, 6, 499, DateTimeKind.Unspecified).AddTicks(3152), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserToken", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserToken", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -362,16 +413,73 @@ namespace BaseProject.Infrastructure.Migrations
                     b.ToTable("UserTokens", "Identity");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.AuditLog", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.DefaultPermissionRecord", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ActionType")
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdaterId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserRoleSystemName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Changes")
+                    b.HasKey("Id");
+
+                    b.ToTable("DefaultPermissionRecords");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionAction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermissionRecordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SystemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdaterId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionRecordId");
+
+                    b.ToTable("PermissionActions", "Authorization");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionRecord", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -381,12 +489,79 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Property<string>("CreatorId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EntityName")
+                    b.Property<string>("DefaultPermissionRecordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("SystemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdaterId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefaultPermissionRecordId");
+
+                    b.ToTable("PermissionRecords", "Authorization");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.RolePermissionAction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermissionActionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdaterId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionActionId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RolePermissionActions", "Authorization");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.UserPermissionAction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAllowed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PermissionActionId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset?>("UpdatedOn")
                         .HasColumnType("datetimeoffset");
@@ -395,11 +570,83 @@ namespace BaseProject.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.HasIndex("PermissionActionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPermissionActions", "Authorization");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Base.GenericAttribute", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AuditLogId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DefaultPermissionRecordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Attribute key/name. Required. Maximum length of 100 characters.");
+
+                    b.Property<string>("PermissionActionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PermissionRecordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RolePermissionActionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserMediaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserPasswordResetId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserPermissionActionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserRefreshTokenId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Attribute value associated with the key. Required. Maximum length of 500 characters.");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuditLogId");
+
+                    b.HasIndex("DefaultPermissionRecordId");
+
+                    b.HasIndex("PermissionActionId");
+
+                    b.HasIndex("PermissionRecordId");
+
+                    b.HasIndex("RolePermissionActionId");
+
+                    b.HasIndex("UserMediaId");
+
+                    b.HasIndex("UserPasswordResetId");
+
+                    b.HasIndex("UserPermissionActionId");
+
+                    b.HasIndex("UserRefreshTokenId");
+
+                    b.ToTable("GenericAttributes", "Base");
                 });
 
             modelBuilder.Entity("BaseProject.Domain.Entities.UserMedia", b =>
@@ -530,9 +777,9 @@ namespace BaseProject.Infrastructure.Migrations
                     b.ToTable("RefreshTokens", "Identity");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationRoleClaim", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationRoleClaim", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationRole", "Role")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationRole", "Role")
                         .WithMany("RoleClaims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -541,19 +788,19 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUser", b =>
                 {
                     b.HasOne("BaseProject.Domain.Entities.UserMedia", "Avatar")
                         .WithOne("User")
-                        .HasForeignKey("BaseProject.Domain.Entities.ApplicationUser", "AvatarId")
+                        .HasForeignKey("BaseProject.Domain.Entities.Auth.ApplicationUser", "AvatarId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Avatar");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserClaim", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserClaim", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -562,9 +809,9 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserLogin", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserLogin", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -573,15 +820,15 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserRole", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserRole", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationRole", "Role")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationRole", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -592,9 +839,9 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUserToken", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUserToken", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("Tokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -603,9 +850,101 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionAction", b =>
+                {
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.PermissionRecord", "PermissionRecord")
+                        .WithMany("Actions")
+                        .HasForeignKey("PermissionRecordId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("PermissionRecord");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionRecord", b =>
+                {
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.DefaultPermissionRecord", null)
+                        .WithMany("PermissionRecords")
+                        .HasForeignKey("DefaultPermissionRecordId");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.RolePermissionAction", b =>
+                {
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.PermissionAction", "PermissionAction")
+                        .WithMany("RolePermissionActions")
+                        .HasForeignKey("PermissionActionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationRole", "Role")
+                        .WithMany("RolePermissionActions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PermissionAction");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.UserPermissionAction", b =>
+                {
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.PermissionAction", "PermissionAction")
+                        .WithMany("UserPermissionActions")
+                        .HasForeignKey("PermissionActionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("UserPermissions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PermissionAction");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Base.GenericAttribute", b =>
+                {
+                    b.HasOne("BaseProject.Domain.Entities.AuditLog", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("AuditLogId");
+
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.DefaultPermissionRecord", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("DefaultPermissionRecordId");
+
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.PermissionAction", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("PermissionActionId");
+
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.PermissionRecord", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("PermissionRecordId");
+
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.RolePermissionAction", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("RolePermissionActionId");
+
+                    b.HasOne("BaseProject.Domain.Entities.UserMedia", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("UserMediaId");
+
+                    b.HasOne("BaseProject.Domain.Entities.UserPasswordReset", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("UserPasswordResetId");
+
+                    b.HasOne("BaseProject.Domain.Entities.Authorization.UserPermissionAction", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("UserPermissionActionId");
+
+                    b.HasOne("BaseProject.Domain.Entities.UserRefreshToken", null)
+                        .WithMany("GenericAttributes")
+                        .HasForeignKey("UserRefreshTokenId");
+                });
+
             modelBuilder.Entity("BaseProject.Domain.Entities.UserPasswordReset", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("PasswordResetRequests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -616,7 +955,7 @@ namespace BaseProject.Infrastructure.Migrations
 
             modelBuilder.Entity("BaseProject.Domain.Entities.UserRefreshToken", b =>
                 {
-                    b.HasOne("BaseProject.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("BaseProject.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -625,14 +964,21 @@ namespace BaseProject.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationRole", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.AuditLog", b =>
+                {
+                    b.Navigation("GenericAttributes");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationRole", b =>
                 {
                     b.Navigation("RoleClaims");
+
+                    b.Navigation("RolePermissionActions");
 
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("BaseProject.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("BaseProject.Domain.Entities.Auth.ApplicationUser", b =>
                 {
                     b.Navigation("Claims");
 
@@ -644,13 +990,60 @@ namespace BaseProject.Infrastructure.Migrations
 
                     b.Navigation("Tokens");
 
+                    b.Navigation("UserPermissions");
+
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.DefaultPermissionRecord", b =>
+                {
+                    b.Navigation("GenericAttributes");
+
+                    b.Navigation("PermissionRecords");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionAction", b =>
+                {
+                    b.Navigation("GenericAttributes");
+
+                    b.Navigation("RolePermissionActions");
+
+                    b.Navigation("UserPermissionActions");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.PermissionRecord", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("GenericAttributes");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.RolePermissionAction", b =>
+                {
+                    b.Navigation("GenericAttributes");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.Authorization.UserPermissionAction", b =>
+                {
+                    b.Navigation("GenericAttributes");
                 });
 
             modelBuilder.Entity("BaseProject.Domain.Entities.UserMedia", b =>
                 {
+                    b.Navigation("GenericAttributes");
+
                     b.Navigation("User")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.UserPasswordReset", b =>
+                {
+                    b.Navigation("GenericAttributes");
+                });
+
+            modelBuilder.Entity("BaseProject.Domain.Entities.UserRefreshToken", b =>
+                {
+                    b.Navigation("GenericAttributes");
                 });
 #pragma warning restore 612, 618
         }

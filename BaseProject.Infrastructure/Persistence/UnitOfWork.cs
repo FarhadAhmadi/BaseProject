@@ -34,11 +34,17 @@ namespace BaseProject.Infrastructure.Persistence
         /// <summary>
         /// Repository for managing forgot password requests.
         /// </summary>
+        /// 
         public IForgotPasswordRepository ForgotPasswords { get; }
 
-        public IPermissionRecordRepository PermissionRecordRepository { get; }
-
+        #region Authorize
+        public IPermissionRecordRepository PermissionRecordRepository{ get; }
         public IPermissionActionRepository PermissionActionRepository { get; }
+        public IRolePermissionActionRepository RolePermissionActionRepository{ get; }
+        public IUserPermissionActionRepository UserPermissionActionRepository { get; }
+
+        #endregion
+
 
         #endregion
 
@@ -56,6 +62,16 @@ namespace BaseProject.Infrastructure.Persistence
             RefreshTokens = new RefreshTokenRepository(_dbContext, _dapperContext);
             Media = new MediaRepository(_dbContext, _dapperContext);
             ForgotPasswords = new ForgotPasswordRepository(_dbContext, _dapperContext);
+
+            #region Authorize
+
+            PermissionRecordRepository = new PermissionRecordRepository(_dbContext, _dapperContext);
+            PermissionActionRepository = new PermissionActionRepository(_dbContext, _dapperContext);
+            RolePermissionActionRepository = new RolePermissionActionRepository(_dbContext, _dapperContext);
+            UserPermissionActionRepository = new UserPermissionActionRepository(_dbContext, _dapperContext);
+
+            #endregion
+
         }
 
         #region Save Changes

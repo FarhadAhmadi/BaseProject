@@ -1,108 +1,48 @@
 ﻿using BaseProject.Domain.Entities.Auth;
-using BaseProject.Domain.Entities.Security;
+using BaseProject.Domain.Entities.Authorization;
 
 namespace BaseProject.Application.Common.Interfaces
 {
     /// <summary>
     /// Permission service interface
     /// </summary>
-    public partial interface IPermissionService
+    public interface IPermissionService
     {
-        /// <summary>
-        /// Delete a permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        Task DeletePermissionRecord(PermissionRecord permission);
+        #region Permission Records
+
+        Task<PermissionRecord?> GetPermissionRecordByIdAsync(string permissionId);
+        Task<PermissionRecord?> GetPermissionRecordBySystemNameAsync(string systemName);
+        Task<List<PermissionRecord>> GetAllPermissionRecordsAsync();
+        Task InsertPermissionRecordAsync(PermissionRecord permission);
+        Task UpdatePermissionRecordAsync(PermissionRecord permission);
+        Task DeletePermissionRecordAsync(PermissionRecord permission);
+
+        #endregion
+
+        #region Authorization
 
         /// <summary>
-        /// Gets a permission
+        /// Checks if a user has the specified permission.
         /// </summary>
-        /// <param name="permissionId">Permission identifier</param>
-        /// <returns>Permission</returns>
-        Task<PermissionRecord> GetPermissionRecordById(string permissionId);
+        /// <param name="permissionSystemName">Permission system name</param>
+        /// <param name="user">Optional user, if null will use current user</param>
+        Task<bool> AuthorizeAsync(string permissionSystemName, ApplicationUser? user = null);
 
         /// <summary>
-        /// Gets a permission
+        /// Checks if a user has the specified permission action.
         /// </summary>
-        /// <param name="systemName">Permission system name</param>
-        /// <returns>Permission</returns>
-        Task<PermissionRecord> GetPermissionRecordBySystemName(string systemName);
+        /// <param name="permissionSystemName">Permission system name</param>
+        /// <param name="actionName">Action name</param>
+        Task<bool> AuthorizeActionAsync(string permissionSystemName, string actionName);
 
-        /// <summary>
-        /// Gets all permissions
-        /// </summary>
-        /// <returns>Permissions</returns>
-        Task<IList<PermissionRecord>> GetAllPermissionRecords();
+        #endregion
 
-        /// <summary>
-        /// Inserts a permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        Task InsertPermissionRecord(PermissionRecord permission);
+        #region Permission Actions
 
-        /// <summary>
-        /// Updates the permission
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        Task UpdatePermissionRecord(PermissionRecord permission);
+        Task<IList<PermissionAction>> GetPermissionActionsAsync(string systemName, string roleId);
+        Task InsertPermissionActionRecordAsync(PermissionAction permissionAction);
+        Task DeletePermissionActionRecordAsync(PermissionAction permissionAction);
 
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permission">Permission record</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        Task<bool> Authorize(PermissionRecord permission);
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permission">Permission record</param>
-        /// <param name="user">ApplicationUser</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        Task<bool> Authorize(PermissionRecord permission, ApplicationUser user);
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        Task<bool> Authorize(string permissionRecordSystemName);
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="user">ApplicationUser</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        Task<bool> Authorize(string permissionRecordSystemName, ApplicationUser user);
-
-        /// <summary>
-        /// Gets a permission actions
-        /// </summary>
-        /// <param name="systemName">Permission system name</param>
-        /// <param name="roleId">Application role ident</param>
-        /// <returns>Permission action</returns>
-        Task<IList<PermissionAction>> GetPermissionActions(string systemName, string roleId);
-
-        /// <summary>
-        /// Inserts a permission action record
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        Task InsertPermissionActionRecord(PermissionAction permissionAction);
-
-        /// <summary>
-        /// Inserts a permission action record
-        /// </summary>
-        /// <param name="permission">Permission</param>
-        Task DeletePermissionActionRecord(PermissionAction permissionAction);
-
-        /// <summary>
-        /// Authorize permission for action
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="permissionActionName">Permission action name</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        Task<bool> AuthorizeAction(string permissionRecordSystemName, string permissionActionName);
-
+        #endregion
     }
 }
