@@ -2,7 +2,7 @@ using BaseProject.Domain.Enums;
 
 namespace BaseProject.Application.Features.Auth.Commands.SignIn;
 
-public class SignInResponse
+public sealed record SignInResponseDto
 {
     public string UserId { get; set; }
     public string UserName { get; set; }

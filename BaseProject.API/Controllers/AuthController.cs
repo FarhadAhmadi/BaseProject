@@ -1,5 +1,4 @@
-﻿using BaseProject.Application.DTOs.User;
-using BaseProject.Application.Features.Auth.Commands.RefreshToken;
+﻿using BaseProject.Application.Features.Auth.Commands.RefreshToken;
 using BaseProject.Application.Features.Auth.Commands.SignIn;
 using BaseProject.Application.Features.Auth.Commands.SignUp;
 using BaseProject.Application.Features.Auth.Queries.GetProfile;
@@ -26,11 +25,11 @@ namespace BaseProject.API.Controllers
         /// Sign in
         /// </summary>
         [HttpPost("sign-in")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Successfully signed in.", typeof(ResponseDto<SignInResponse>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully signed in.", typeof(ResponseDto<SignInResponseDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request.", typeof(ResponseDto<object>))]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Authentication failed.", typeof(ResponseDto<object>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error", typeof(ResponseDto<object>))]
-        public async Task<IActionResult> SignIn(UserSignInRequestDto request, CancellationToken token)
+        public async Task<IActionResult> SignIn([FromBody] SignInRequestDto request, CancellationToken token)
         {
             var result = await _mediator.Send(new SignInCommand
             {
@@ -39,7 +38,7 @@ namespace BaseProject.API.Controllers
             }, token);
 
             return result == null
-                ? Fail<SignInResponse>("Authentication failed", StatusCodes.Status401Unauthorized)
+                ? Fail<SignInResponseDto>("Authentication failed", StatusCodes.Status401Unauthorized)
                 : Success(result, "Successfully signed in");
         }
 
@@ -49,7 +48,7 @@ namespace BaseProject.API.Controllers
         [HttpPost("sign-up")]
         [SwaggerResponse(StatusCodes.Status201Created, "User registered successfully.", typeof(ResponseDto<SignUpResponse>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request.")]
-        public async Task<IActionResult> SignUp(UserSignUpRequestDto request, CancellationToken token)
+        public async Task<IActionResult> SignUp([FromBody] SignUpRequestDto request, CancellationToken token)
         {
             var result = await _mediator.Send(new SignUpCommand
             {

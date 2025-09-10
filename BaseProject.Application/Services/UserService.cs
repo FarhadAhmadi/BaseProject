@@ -80,7 +80,7 @@ namespace BaseProject.Application.Services
         public async Task Delete(string userId, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(userId)
-                ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             var avatar = await _unitOfWork.Media.GetFirstOrDefaultAsync<UserMedia>(
                 filter: x => x.Id == user.AvatarId
@@ -106,7 +106,7 @@ namespace BaseProject.Application.Services
         public async Task RoleAssign(RoleAssignRequestDto request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.UserId)
-                ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             // Handle Role Removal
             var removedRoles = request.Roles.Where(x => !x.Selected).Select(x => x.Name).ToList();

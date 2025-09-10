@@ -7,9 +7,8 @@ using BaseProject.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 
-public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignInResponse>
+public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignInResponseDto>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -34,7 +33,7 @@ public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignIn
         _appLogger = appLogger;
     }
 
-    public async Task<SignInResponse> Handle(SignInCommand request, CancellationToken cancellationToken)
+    public async Task<SignInResponseDto> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
         // 1. Log: Start login attempt
         _appLogger.LogLoginAttempt(request.UserName);
@@ -45,12 +44,12 @@ public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignIn
             .Include(u => u.Avatar)
             .FirstOrDefaultAsync(u => u.UserName == request.UserName, cancellationToken);
 
-        if (user == null)
-        {
-            // Log: User not found
-            _appLogger.LogLoginInvalidUserName(request.UserName);
-            throw AuthIdentityException.ThrowAccountDoesNotExist();
-        }
+        //if (user == null)
+        //{
+        //    // Log: User not found
+        //    _appLogger.LogLoginInvalidUserName(request.UserName);
+        //    throw AuthIdentityException.ThrowInvalidCredentials();
+        //}
 
         // 3. Check password with lockout enabled
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
@@ -80,7 +79,7 @@ public sealed class SignInCommandHandler : IRequestHandler<SignInCommand, SignIn
         _appLogger.LogLoginResult(user.Id, success: true);
 
         // 8. Return response DTO
-        return new SignInResponse
+        return new SignInResponseDto
         {
             UserId = user.Id,
             UserName = user.UserName,

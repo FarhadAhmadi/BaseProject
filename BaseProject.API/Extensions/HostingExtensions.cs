@@ -53,13 +53,16 @@ namespace BaseProject.API.Extensions
                 await initializer.InitializeAsync();
             }
 
-            // Global Exception Middleware
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
-
+            // CorrelationId first (so everything downstream has a correlation id)
             app.UseCorrelationId();
 
-            // Logging and performance middlewares
+            // Logging (wraps request + response consistently)
             app.UseMiddleware<LoggingMiddleware>();
+
+            // Exception handling (so errors are caught inside logging)
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+            // Performance (optional, order depends if you want errors to stop timing early or not)
             app.UseMiddleware<PerformanceMiddleware>();
 
             app.UseHttpsRedirection();

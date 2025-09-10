@@ -41,25 +41,25 @@ public sealed class SignUpCommandHandler
         // 1. Log: Start signup attempt
         _appLogger.LogSignUpAttempt(request.UserName, request.Email);
 
-        // 2. Validate password match
-        if (request.Password != request.RePassword)
-        {
-            _appLogger.Warning("Sign-up failed | Passwords do not match | UserName: {UserName}", request.UserName);
-            throw AuthIdentityException.ThrowPasswordMismatch();
-        }
+        //// 2. Validate password match
+        //if (request.Password != request.RePassword)
+        //{
+        //    _appLogger.Warning("Sign-up failed | Passwords do not match | UserName: {UserName}", request.UserName);
+        //    throw AuthIdentityException.ThrowPasswordMismatch();
+        //}
 
-        // 3. Check if username or email already exists
-        if (await _userManager.FindByNameAsync(request.UserName) != null)
-        {
-            _appLogger.Warning("Sign-up failed | Username already exists | UserName: {UserName}", request.UserName);
-            throw AuthIdentityException.ThrowUsernameAvailable();
-        }
+        //// 3. Check if username or email already exists
+        //if (await _userManager.FindByNameAsync(request.UserName) != null)
+        //{
+        //    _appLogger.Warning("Sign-up failed | Username already exists | UserName: {UserName}", request.UserName);
+        //    throw AuthIdentityException.ThrowUsernameAvailable();
+        //}
 
-        if (await _userManager.FindByEmailAsync(request.Email) != null)
-        {
-            _appLogger.Warning("Sign-up failed | Email already exists | Email: {Email}", request.Email);
-            throw AuthIdentityException.ThrowEmailAvailable();
-        }
+        //if (await _userManager.FindByEmailAsync(request.Email) != null)
+        //{
+        //    _appLogger.Warning("Sign-up failed | Email already exists | Email: {Email}", request.Email);
+        //    throw AuthIdentityException.ThrowEmailAvailable();
+        //}
 
         // 4. Create new user
         var user = new ApplicationUser()

@@ -24,6 +24,9 @@ namespace BaseProject.Application.Common.Exceptions
         public static FriendlyException  ThrowAccountDoesNotExist()
             => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.InvalidCredentialsMessage, AuthIdentityErrorMessage.InvalidCredentialsMessage);
 
+        public static FriendlyException ThrowInvalidCredentials()
+            => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.InvalidCredentialsMessage, AuthIdentityErrorMessage.InvalidCredentialsMessage);
+
         public static FriendlyException  ThrowLoginUnsuccessful()
             => throw new FriendlyException (ApiErrorCode.BadRequest, AuthIdentityErrorMessage.InvalidCredentialsMessage, AuthIdentityErrorMessage.InvalidCredentialsMessage);
 
@@ -32,6 +35,9 @@ namespace BaseProject.Application.Common.Exceptions
 
         public static FriendlyException  ThrowEmailAvailable()
             => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.EmailAvailableMessage, AuthIdentityErrorMessage.EmailAvailableMessage);
+
+        public static FriendlyException  ThrowPhoneNumberAvailable()
+            => throw new FriendlyException (ApiErrorCode.NotFound, AuthIdentityErrorMessage.PhoneNumberAvailableMessage, AuthIdentityErrorMessage.PhoneNumberAvailableMessage);
 
         public static FriendlyException  ThrowRegisterUnsuccessful(string errors)
             => throw new FriendlyException (ApiErrorCode.BadRequest, AuthIdentityErrorMessage.RegisterUnsuccessfulMessage, errors);

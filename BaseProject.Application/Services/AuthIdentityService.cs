@@ -7,7 +7,6 @@ using BaseProject.Domain.Entities;
 using BaseProject.Domain.Enums;
 using BaseProject.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security.Claims;
@@ -48,7 +47,7 @@ namespace BaseProject.Application.Services
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName, cancellationToken)
-                ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             // Step 2: Check the password first to avoid unnecessary database queries if invalid.
             var passwordCheckResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
@@ -109,7 +108,7 @@ namespace BaseProject.Application.Services
         public async Task<TokenResponseDto> RefreshTokenAsync(string token, CancellationToken cancellationToken)
         {
             var user = await _userManager.Users.Include(x => x.RefreshTokens)
-                                               .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                                               .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
@@ -147,7 +146,7 @@ namespace BaseProject.Application.Services
                             Avatar = x.Avatar.PathMedia ?? " "
                         })
                         .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken)
-                        ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                        ?? throw AuthIdentityException.ThrowInvalidCredentials();
 
             return users;
         }

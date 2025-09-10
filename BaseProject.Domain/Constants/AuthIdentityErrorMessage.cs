@@ -11,6 +11,7 @@
         public const string RefreshTokenUnsuccessfulMessage = "Refresh token was unsuccessful.";
         public const string UsernameAvailableMessage = "The username is available.";
         public const string EmailAvailableMessage = "The email address is available.";
+        public const string PhoneNumberAvailableMessage = "The PhoneNumber is available.";
         public const string RegisterUnsuccessfulMessage = "Registration was unsuccessful.";
         public const string UserNotExistMessage = "The user does not exist.";
         public const string UpdateUnsuccessfulMessage = "The update operation was unsuccessful.";

@@ -45,7 +45,7 @@ public sealed class RefreshTokenCommandHandler
             .SingleOrDefaultAsync(u => u.Id == refreshToken.UserId, cancellationToken);
 
         if (user == null)
-            throw AuthIdentityException.ThrowAccountDoesNotExist();
+            throw AuthIdentityException.ThrowInvalidCredentials();
 
         // 3️⃣ revoke توکن فعلی
         refreshToken.Revoked = DateTime.UtcNow;

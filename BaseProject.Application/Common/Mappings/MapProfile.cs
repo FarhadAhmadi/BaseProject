@@ -1,5 +1,4 @@
 using AutoMapper;
-using BaseProject.Application.DTOs.User;
 using BaseProject.Application.Features.Auth.Commands.SignIn;
 using BaseProject.Application.Features.Auth.Commands.SignUp;
 using BaseProject.Application.Features.Auth.Queries.GetProfile;
@@ -12,9 +11,9 @@ public class MapProfile : Profile
 {
     public MapProfile()
     {
-        CreateMap<ApplicationUser, UserSignInRequestDto>().ReverseMap();
-        CreateMap<ApplicationUser, SignInResponse>().ReverseMap();
-        CreateMap<ApplicationUser, UserSignUpRequestDto>().ReverseMap();
+        CreateMap<ApplicationUser, SignInRequestDto>().ReverseMap();
+        CreateMap<ApplicationUser, SignInResponseDto>().ReverseMap();
+        CreateMap<ApplicationUser, SignUpRequestDto>().ReverseMap();
         CreateMap<ApplicationUser, SignUpResponse>().ReverseMap();
         CreateMap<ApplicationUser, ProfileResponse>().ReverseMap();
 

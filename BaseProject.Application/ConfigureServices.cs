@@ -2,6 +2,8 @@ using BaseProject.API.Behaviors;
 using BaseProject.Application.Behaviours;
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.Common.Mappings;
+using BaseProject.Application.Common.Validation;
+using BaseProject.Application.Features.Auth.Commands.SignIn;
 using BaseProject.Application.Services;
 using BaseProject.Domain.Configurations;
 using FluentValidation;
@@ -20,7 +22,9 @@ public static class ConfigureServices
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
-        services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandValidator>();
+        //services.AddValidatorsFromAssemblyContaining<Features.Auth.Commands.SignIn.SignInCommandValidator>();
+        services.AddScoped<IBusinessValidator<SignInCommand>, SignInCommandValidator>();
+
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRRetryBehavior<,>));

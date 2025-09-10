@@ -1,17 +1,24 @@
-﻿using FluentValidation;
+﻿using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Validation;
+using BaseProject.Domain.Interfaces;
 
-namespace BaseProject.Application.Features.Auth.Commands.SignIn;
-
-public sealed class SignInCommandValidator : AbstractValidator<SignInCommand>
+namespace BaseProject.Application.Features.Auth.Commands.SignIn
 {
-    public SignInCommandValidator()
+    public sealed class SignInCommandValidator : BusinessValidatorBase<SignInCommand>
     {
-        RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage("UserName is required.")
-            .MinimumLength(3).WithMessage("UserName must be at least 3 characters long.");
+        public SignInCommandValidator(IUnitOfWork unitOfWork)
+        {
+            // Rule 1: User must exist
+            RuleFor(
+                async r => await unitOfWork.Users.ExistsAsync(u => u.UserName == r.UserName),
+                () => AuthIdentityException.ThrowInvalidCredentials()
+            );
 
-        RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required.")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
+            // Rule 2: Password cannot be empty (basic safeguard)
+            RuleFor(
+                r => Task.FromResult(!string.IsNullOrWhiteSpace(r.Password)),
+                () => AuthIdentityException.ThrowInvalidCredentials()
+            );
+        }
     }
 }

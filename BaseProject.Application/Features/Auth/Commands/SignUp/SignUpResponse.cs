@@ -1,7 +1,7 @@
 using BaseProject.Domain.Enums;
 
 namespace BaseProject.Application.Features.Auth.Commands.SignUp;
-public class SignUpResponse
+public sealed record SignUpResponse
 {
     public string Id { get; set; }
     public string UserName { get; set; }

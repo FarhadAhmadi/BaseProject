@@ -1,27 +1,33 @@
+using BaseProject.Application.Common.Exceptions;
+using BaseProject.Application.Common.Validation;
 using BaseProject.Application.Features.Auth.Commands.SignUp;
-using FluentValidation;
+using BaseProject.Domain.Entities;
+using BaseProject.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
-public sealed class SignUpCommandValidator : AbstractValidator<SignUpCommand>
+public sealed class SignUpCommandValidator : BusinessValidatorBase<SignUpCommand>
 {
-    public SignUpCommandValidator()
+    public SignUpCommandValidator(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
     {
-        RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage("Username is required.");
+        // 1. Password match
+        RuleFor(r => Task.FromResult(r.Password == r.RePassword),
+            () => AuthIdentityException.ThrowPasswordMismatch()
+        );
 
-        RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required.")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
+        // 2. Username availability
+        RuleFor(async r => (await userManager.FindByNameAsync(r.UserName)) == null,
+                        () => AuthIdentityException.ThrowUsernameAvailable()
+        );
 
-        RuleFor(x => x.RePassword)
-            .Equal(x => x.Password).WithMessage("Passwords do not match.");
+        // 3. Email availability
+        RuleFor(async r => (await userManager.FindByEmailAsync(r.Email)) == null,
+                        () => AuthIdentityException.ThrowEmailAvailable()
+        );
 
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Email is not valid.");
-
-        RuleFor(x => x.PhoneNumber)
-            .Matches(@"^(?:\+98|0)?9\d{9}$")
-            .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber))
-            .WithMessage("PhoneNumber must be a valid Iranian mobile number.");
+        // 4. Phone number unique (optional example if required)
+        RuleFor(async r => string.IsNullOrEmpty(r.PhoneNumber) ||
+                           !(await unitOfWork.Users.ExistsAsync(u => u.PhoneNumber == r.PhoneNumber)),
+                        () => AuthIdentityException.ThrowPhoneNumberAvailable()
+        );
     }
 }
