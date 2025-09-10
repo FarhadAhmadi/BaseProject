@@ -10,7 +10,7 @@ public class ForgotPasswordConfig : IEntityTypeConfiguration<UserPasswordReset>
     {
         builder.ToTable("ForgotPasswords", "Identity");
 
-        builder.HasKey(f => f.Id);
+        //builder.HasKey(f => f.Id);
 
         builder.Property(f => f.Email)
                .HasMaxLength(256)

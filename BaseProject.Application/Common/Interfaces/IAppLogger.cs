@@ -7,5 +7,4 @@
         void Warning(string message, params object[] properties);
         void Error(Exception? ex, string message, params object[] properties);
     }
-
 }

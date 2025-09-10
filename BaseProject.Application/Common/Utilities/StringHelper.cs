@@ -1,4 +1,4 @@
-﻿using BaseProject.Domain.Entities;
+﻿using BaseProject.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Identity;
 
 namespace BaseProject.Application.Common.Utilities

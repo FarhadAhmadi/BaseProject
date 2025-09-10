@@ -10,7 +10,7 @@ public class MediaConfiguration : IEntityTypeConfiguration<UserMedia>
     {
         builder.ToTable("Media", "Identity");
 
-        builder.HasKey(m => m.Id);
+        //builder.HasKey(m => m.Id);
 
         builder.Property(m => m.PathMedia)
                .HasMaxLength(1024)

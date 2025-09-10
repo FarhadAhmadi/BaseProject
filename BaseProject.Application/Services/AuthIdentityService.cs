@@ -4,6 +4,7 @@ using BaseProject.Application.Common.Utilities;
 using BaseProject.Application.DTOs.AuthIdentity.UsersIdentity;
 using BaseProject.Domain.Configurations;
 using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Enums;
 using BaseProject.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;

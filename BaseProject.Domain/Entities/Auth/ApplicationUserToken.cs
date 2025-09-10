@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace BaseProject.Domain.Entities
+namespace BaseProject.Domain.Entities.Auth
 {
     /// <summary>
-    /// Represents a claim associated with a role.
+    /// Represents a token for a user.
     /// </summary>
-    public class ApplicationRoleClaim : IdentityRoleClaim<string>
+    public class ApplicationUserToken : IdentityUserToken<string>
     {
-        public virtual ApplicationRole Role { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
         #region Audit Properties
         public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.Now;

@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace BaseProject.Domain.Entities
+namespace BaseProject.Domain.Entities.Auth
 {
     /// <summary>
-    /// Represents a token for a user.
+    /// Represents a login associated with a user.
     /// </summary>
-    public class ApplicationUserToken : IdentityUserToken<string>
+    public class ApplicationUserLogin : IdentityUserLogin<string>
     {
         public virtual ApplicationUser User { get; set; }
 

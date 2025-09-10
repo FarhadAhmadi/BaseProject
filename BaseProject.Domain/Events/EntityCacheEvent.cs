@@ -1,0 +1,16 @@
+﻿using BaseProject.Domain.Enums;
+using MediatR;
+
+namespace BaseProject.Domain.Events
+{
+    public class EntityCacheEvent : INotification
+    {
+        public EntityCacheEvent(string entity, CacheEvent cacheevent)
+        {
+            Entity = entity;
+            Event = cacheevent;
+        }
+        public string Entity { get; private set; }
+        public CacheEvent Event { get; private set; }
+    }
+}

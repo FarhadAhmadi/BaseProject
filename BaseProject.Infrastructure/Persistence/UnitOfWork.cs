@@ -36,6 +36,10 @@ namespace BaseProject.Infrastructure.Persistence
         /// </summary>
         public IForgotPasswordRepository ForgotPasswords { get; }
 
+        public IPermissionRecordRepository PermissionRecordRepository { get; }
+
+        public IPermissionActionRepository PermissionActionRepository { get; }
+
         #endregion
 
         /// <summary>
@@ -64,6 +68,15 @@ namespace BaseProject.Infrastructure.Persistence
         {
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Saves all changes made in the current DbContext to the database asynchronously.
+        /// </summary>
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+
 
         #endregion
 

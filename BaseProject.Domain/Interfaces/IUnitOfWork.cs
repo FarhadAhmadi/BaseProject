@@ -33,6 +33,16 @@ namespace BaseProject.Domain.Interfaces
         /// </summary>
         IForgotPasswordRepository ForgotPasswords { get; }
 
+        /// <summary>
+        /// Repository for managing PermissionRecord
+        /// </summary>
+        IPermissionRecordRepository PermissionRecordRepository { get; }
+
+        /// <summary>
+        /// Repository for managing PermissionAction
+        /// </summary>
+        IPermissionActionRepository PermissionActionRepository { get; }
+
         // Future repositories can be added here:
         // IBookRepository Books { get; }
         // IAuthorRepository Authors { get; }
@@ -48,6 +58,12 @@ namespace BaseProject.Domain.Interfaces
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         Task SaveChangesAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Saves all changes made in the current DbContext to the database asynchronously.
+        /// </summary>
+        Task SaveChangesAsync();
+
 
         #endregion
 

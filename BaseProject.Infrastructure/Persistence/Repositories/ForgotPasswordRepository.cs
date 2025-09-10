@@ -1,6 +1,5 @@
 ﻿using BaseProject.Domain.Entities;
 using BaseProject.Domain.Interfaces;
-using System.Linq;
 
 namespace BaseProject.Infrastructure.Persistence.Repositories
 {

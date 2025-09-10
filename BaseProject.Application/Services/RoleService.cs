@@ -1,6 +1,6 @@
 using BaseProject.Application.Common.Interfaces;
 using BaseProject.Application.DTOs.AuthIdentity.Roles;
-using BaseProject.Domain.Entities;
+using BaseProject.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,4 +22,6 @@ namespace BaseProject.Application.Services
             return roles;
         }
     }
+
+
 }

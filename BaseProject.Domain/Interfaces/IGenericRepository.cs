@@ -163,6 +163,17 @@ namespace BaseProject.Domain.Interfaces
 
         #endregion
 
+        /// <summary>
+        /// Gets the queryable table for the entity.
+        /// Useful for building custom queries in the service layer.
+        /// </summary>
+        IQueryable<T> Table { get; }
+
+        /// <summary>
+        /// Gets the queryable table for the entity without tracking (read-only).
+        /// </summary>
+        IQueryable<T> TableNoTracking { get; }
+
         #endregion
     }
 }

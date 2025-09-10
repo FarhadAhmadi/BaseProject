@@ -1,4 +1,4 @@
-﻿using BaseProject.Domain.Entities;
+﻿using BaseProject.Domain.Entities.Auth;
 using BaseProject.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
