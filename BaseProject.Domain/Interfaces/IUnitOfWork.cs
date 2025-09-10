@@ -36,18 +36,14 @@ namespace BaseProject.Domain.Interfaces
         /// <summary>
         /// Repository for managing PermissionRecord
         /// </summary>
-        IPermissionRecordRepository PermissionRecordRepository { get; }
+        /// 
+        #region Authorize
+        IPermissionRecordRepository PermissionRecords { get; }
+        IPermissionActionRepository PermissionActions { get; }
+        IRolePermissionActionRepository RolePermissionActions { get; }
+        IUserPermissionActionRepository UserPermissionActions{ get; }
 
-        /// <summary>
-        /// Repository for managing PermissionAction
-        /// </summary>
-        IPermissionActionRepository PermissionActionRepository { get; }
-
-        // Future repositories can be added here:
-        // IBookRepository Books { get; }
-        // IAuthorRepository Authors { get; }
-        // IPublisherRepository Publishers { get; }
-        // ICategoryRepository Categories { get; }
+        #endregion
 
         #endregion
 

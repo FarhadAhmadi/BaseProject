@@ -20,11 +20,9 @@ namespace BaseProject.API.Security.Authorization
 
             IPermissionService permissionService = context.HttpContext.RequestServices.GetRequiredService<IPermissionService>();
 
-            // Allow if authorized
             if (await permissionService.AuthorizeAsync(Permission))
                 return;
 
-            // Deny access for Web API
             context.Result = new JsonResult(new ErrorDto
             {
                 Message = $"Access denied for permission '{Permission}' to resource '{context.HttpContext.Request.Path}'",

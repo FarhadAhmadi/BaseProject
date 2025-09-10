@@ -29,7 +29,6 @@ namespace BaseProject.API.Security.Authorization
             if (await permissionService.AuthorizeActionAsync(permissionAuthorize.Permission, PermissionAction))
                 return;
 
-            // For API calls, return JSON with proper HTTP status code
             context.Result = new JsonResult(new ErrorDto
             {
                 Message = $"Access denied to resource '{context.HttpContext.Request.Path}'",

@@ -38,10 +38,10 @@ namespace BaseProject.Infrastructure.Persistence
         public IForgotPasswordRepository ForgotPasswords { get; }
 
         #region Authorize
-        public IPermissionRecordRepository PermissionRecordRepository{ get; }
-        public IPermissionActionRepository PermissionActionRepository { get; }
-        public IRolePermissionActionRepository RolePermissionActionRepository{ get; }
-        public IUserPermissionActionRepository UserPermissionActionRepository { get; }
+        public IPermissionRecordRepository PermissionRecords{ get; }
+        public IPermissionActionRepository PermissionActions { get; }
+        public IRolePermissionActionRepository RolePermissionActions{ get; }
+        public IUserPermissionActionRepository UserPermissionActions { get; }
 
         #endregion
 
@@ -65,10 +65,10 @@ namespace BaseProject.Infrastructure.Persistence
 
             #region Authorize
 
-            PermissionRecordRepository = new PermissionRecordRepository(_dbContext, _dapperContext);
-            PermissionActionRepository = new PermissionActionRepository(_dbContext, _dapperContext);
-            RolePermissionActionRepository = new RolePermissionActionRepository(_dbContext, _dapperContext);
-            UserPermissionActionRepository = new UserPermissionActionRepository(_dbContext, _dapperContext);
+            PermissionRecords = new PermissionRecordRepository(_dbContext, _dapperContext);
+            PermissionActions = new PermissionActionRepository(_dbContext, _dapperContext);
+            RolePermissionActions = new RolePermissionActionRepository(_dbContext, _dapperContext);
+            UserPermissionActions = new UserPermissionActionRepository(_dbContext, _dapperContext);
 
             #endregion
 
