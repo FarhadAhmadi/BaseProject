@@ -42,7 +42,6 @@ namespace BaseProject.Infrastructure.Persistence
 
             base.OnConfiguring(optionsBuilder);
         }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
