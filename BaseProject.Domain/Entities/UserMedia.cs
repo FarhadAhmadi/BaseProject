@@ -1,4 +1,5 @@
-﻿using BaseProject.Domain.Entities.Auth;
+﻿
+using BaseProject.Domain.Entities.Auth;
 using BaseProject.Domain.Entities.Base;
 using BaseProject.Domain.Enums;
 using Swashbuckle.AspNetCore.Annotations;
