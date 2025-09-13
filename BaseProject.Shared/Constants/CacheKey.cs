@@ -17,6 +17,5 @@ namespace BaseProject.Shared.Constants
         public const string PERMISSIONS_USER_OVERRIDE_ACTION_KEY = "permissions.overrideaction-{0}-{1}-{2}"; // userId, permission, action
 
         #endregion
-
     }
 }
