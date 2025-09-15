@@ -15,10 +15,10 @@ namespace BaseProject.Domain.Entities
         public MediaType Type { get; set; }
 
         [SwaggerSchema("Path to the media file.")]
-        public string PathMedia { get; set; }
+        public string? PathMedia { get; set; }
 
         [SwaggerSchema("Optional caption for the media.")]
-        public string Caption { get; set; }
+        public string? Caption { get; set; }
 
         [SwaggerSchema("Size of the file in bytes.")]
         public long FileSize { get; set; }
@@ -27,6 +27,6 @@ namespace BaseProject.Domain.Entities
         public DateTime DateCreated { get; set; }
 
         [SwaggerSchema("The user who uploaded this media.")]
-        public ApplicationUser User { get; set; }
+        public required ApplicationUser User { get; set; }
     }
 }
