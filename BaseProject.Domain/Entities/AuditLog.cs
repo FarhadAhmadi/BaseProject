@@ -23,5 +23,4 @@ namespace BaseProject.Domain.Entities
         [SwaggerSchema("Timestamp of the action.")]
         public DateTime Timestamp { get; set; }
     }
-
 }
