@@ -29,5 +29,4 @@ namespace BaseProject.Domain.Entities
         [SwaggerSchema("The user who uploaded this media.")]
         public required ApplicationUser User { get; set; }
     }
-
 }
