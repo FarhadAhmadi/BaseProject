@@ -53,17 +53,16 @@ public static class ConfigureServices
         }
         //DbContext Initializer
         services.AddTransient<ApplicationDbContextInitializer>();
+        //Dapper Initializer
+        services.AddScoped<SqlDapperContext>();
         //Add Identity
         services.AddCustomIdentity();
-
-
         // Repositories & services
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<SqlDapperContext>();
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<ICookieService, CookieService>();
         services.AddScoped<ICacheBase, MemoryCacheBase>();
