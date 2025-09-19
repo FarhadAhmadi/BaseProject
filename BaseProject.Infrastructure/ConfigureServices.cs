@@ -53,7 +53,6 @@ public static class ConfigureServices
         }
         //DbContext Initializer
         services.AddTransient<ApplicationDbContextInitializer>();
-
         //Add Identity
         services.AddCustomIdentity();
 
