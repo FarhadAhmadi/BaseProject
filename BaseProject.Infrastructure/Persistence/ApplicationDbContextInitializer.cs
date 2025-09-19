@@ -21,18 +21,12 @@ namespace BaseProject.Infrastructure.Persistence
             try
             {
                 await _context.Database.MigrateAsync();
-                await SeedUser();
             }
             catch (Exception exception)
             {
                 _logger.LogError("Migration error {exception}", exception);
                 throw;
             }
-        }
-
-        public async Task SeedUser()
-        {
-            await _context.SaveChangesAsync();
         }
     }
 }
