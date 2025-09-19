@@ -51,6 +51,8 @@ public static class ConfigureServices
                 );
             });
         }
+        //DbContext Initializer
+        services.AddTransient<ApplicationDbContextInitializer>();
 
         //Add Identity
         services.AddCustomIdentity();
@@ -62,7 +64,6 @@ public static class ConfigureServices
         services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddTransient<ApplicationDbContextInitializer>();
         services.AddScoped<SqlDapperContext>();
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<ICookieService, CookieService>();
